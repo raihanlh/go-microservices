@@ -57,11 +57,6 @@ func (a *ArticleServer) CreateArticle(ctx context.Context, req *pb.CreateArticle
 }
 
 func (a *ArticleServer) GetArticleById(ctx context.Context, req *pb.GetArticleRequest) (*pb.GetArticleResponse, error) {
-	// var user *pb.GetUserResponse
-	// user, err := a.AuthService.GetByToken(ctx, &pb.GetByTokenRequest{
-	// 	Token: req.Token,
-	// })
-
 	article, err := a.ArticleRepository.FindById(req.Id)
 	if err != nil {
 		return &pb.GetArticleResponse{}, err
@@ -76,4 +71,22 @@ func (a *ArticleServer) GetArticleById(ctx context.Context, req *pb.GetArticleRe
 	}, nil
 }
 
-// func (a *ArticleServer) GetArticleByUser(ctx context.Context, req *pb.GetArticleRequest)
+func (a *ArticleServer) GetArticleByUser(ctx context.Context, req *pb.GetAllArticleByUserRequest) (*pb.GetAllArticleResponse, error) {
+	var user *pb.GetUserResponse
+	user, err := a.AuthService.GetByToken(ctx, &pb.GetByTokenRequest{
+		Token: req.Token,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	articles, err := a.ArticleRepository.FindAllByUserId(user.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.GetAllArticleResponse{
+		Articles: articles,
+	}, nil
+
+}

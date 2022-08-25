@@ -33,7 +33,7 @@ message GetAllArticleByUserRequest {
 }
 
 message GetAllArticleResponse {
-  repeated GetAllArticleResponse articles = 1;
+  repeated GetArticleResponse articles = 1;
 }
 
 message GetAllArticleRequest {}

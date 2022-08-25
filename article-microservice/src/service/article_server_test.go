@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	_ "github.com/lib/pq"
 	pb "github.com/raihanlh/go-article-microservice/proto"
@@ -42,11 +43,11 @@ func init() {
 	authAddress := fmt.Sprintf("%v:%v", "", configuration.Auth.Port)
 
 	var authConn *grpc.ClientConn
-	authConn, err = grpc.Dial(authAddress, grpc.WithInsecure())
+	authConn, err = grpc.Dial(authAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Could not connect to port %v: %v", configuration.Auth.Port, err)
 	}
-	fmt.Println("Connected succesfully")
+	fmt.Println("Connected to auth gRPC server succesfully")
 
 	// defer authConn.Close()
 
@@ -92,7 +93,6 @@ func TestArticleService(t *testing.T) {
 			t.Errorf("Create article test failed")
 		}
 		t.Log(res)
-		fmt.Println(res)
 		id = res.Article.Id
 	})
 
@@ -105,6 +105,21 @@ func TestArticleService(t *testing.T) {
 			t.Errorf("Get article test failed")
 		}
 		t.Log(res)
-		fmt.Println(res)
+	})
+
+	t.Run("Ensure get all article owned by a user id is success", func(t *testing.T) {
+		res, err := client.GetArticleByUser(ctx, &pb.GetAllArticleByUserRequest{
+			Token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAbG9jYWwuaG9zdCIsImV4cCI6MTY2MTUwMDUyMCwiaWQiOjl9.O63PMfYfxAhf54_4ANuFc4vlgL4yjPSNNyZdcuZb6fE",
+		})
+		if err != nil {
+			t.Log(err)
+			t.Errorf("Get article test failed")
+		}
+
+		result, err := json.MarshalIndent(res, "", " ")
+		if err != nil {
+			t.Log(err)
+		}
+		fmt.Println(string(result))
 	})
 }
