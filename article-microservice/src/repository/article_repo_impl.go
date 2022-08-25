@@ -44,9 +44,28 @@ func (repo *ArticleRepositoryImpl) Save(article *entity.Article) (entity.Article
 func (repo *ArticleRepositoryImpl) Update(Article *entity.Article) (entity.Article, error) {
 	return entity.Article{}, nil
 }
-func (repo *ArticleRepositoryImpl) GetById(id int64) (entity.Article, error) {
-	return entity.Article{}, nil
+func (repo *ArticleRepositoryImpl) FindById(id int64) (entity.Article, error) {
+	const query = `SELECT title, content, created_at, updated_at FROM articles a WHERE a.id = $1`
+	var title string
+	var content string
+	var created_at time.Time
+	var updated_at time.Time
+
+	err := repo.DB.QueryRow(query, id).Scan(
+		&title, &content, &created_at, &updated_at)
+	if err != nil {
+		fmt.Println(err)
+		return entity.Article{}, err
+	}
+
+	return entity.Article{
+		Id:        id,
+		Title:     title,
+		Content:   content,
+		CreatedAt: created_at,
+		UpdatedAt: updated_at,
+	}, nil
 }
-func (repo *ArticleRepositoryImpl) GetAllByUserId(user_id int64) ([]entity.Article, error) {
+func (repo *ArticleRepositoryImpl) FindAllByUserId(user_id int64) ([]entity.Article, error) {
 	return make([]entity.Article, 1), nil
 }

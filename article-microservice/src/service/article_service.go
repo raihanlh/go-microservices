@@ -54,5 +54,26 @@ func (a *ArticleServer) CreateArticle(ctx context.Context, req *pb.CreateArticle
 		Message: "Article created succesfully",
 		Status:  "201",
 	}, nil
-
 }
+
+func (a *ArticleServer) GetArticleById(ctx context.Context, req *pb.GetArticleRequest) (*pb.GetArticleResponse, error) {
+	// var user *pb.GetUserResponse
+	// user, err := a.AuthService.GetByToken(ctx, &pb.GetByTokenRequest{
+	// 	Token: req.Token,
+	// })
+
+	article, err := a.ArticleRepository.FindById(req.Id)
+	if err != nil {
+		return &pb.GetArticleResponse{}, err
+	}
+
+	return &pb.GetArticleResponse{
+		Id:        article.Id,
+		Title:     article.Title,
+		Content:   article.Content,
+		CreatedAt: timestamppb.New(article.CreatedAt),
+		UpdatedAt: timestamppb.New(article.UpdatedAt),
+	}, nil
+}
+
+// func (a *ArticleServer) GetArticleByUser(ctx context.Context, req *pb.GetArticleRequest)

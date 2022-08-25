@@ -40,6 +40,7 @@ message GetAllArticleRequest {}
 
 service ArticleService {
   rpc CreateArticle(CreateArticleRequest) returns (CreateArticleResponse) {}
-  rpc GetArticleByUser(GetAllArticleByUserRequest) returns (GetArticleResponse) {}
-  rpc GetAllArticle(GetAllArticleRequest) returns (GetArticleResponse) {}
+  rpc GetArticleByUser(GetAllArticleByUserRequest) returns (GetAllArticleResponse) {}
+  rpc GetAllArticle(GetAllArticleRequest) returns (GetAllArticleResponse) {}
+  rpc GetArticleById(GetArticleRequest) returns (GetArticleResponse) {}
 }

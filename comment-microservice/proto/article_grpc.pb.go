@@ -19,7 +19,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ArticleServiceClient interface {
 	CreateArticle(ctx context.Context, in *CreateArticleRequest, opts ...grpc.CallOption) (*CreateArticleResponse, error)
-	GetArticle(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (*GetArticleResponse, error)
+	GetArticleByUser(ctx context.Context, in *GetAllArticleByUserRequest, opts ...grpc.CallOption) (*GetAllArticleResponse, error)
+	GetAllArticle(ctx context.Context, in *GetAllArticleRequest, opts ...grpc.CallOption) (*GetAllArticleResponse, error)
+	GetArticleById(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (*GetArticleResponse, error)
 }
 
 type articleServiceClient struct {
@@ -39,9 +41,27 @@ func (c *articleServiceClient) CreateArticle(ctx context.Context, in *CreateArti
 	return out, nil
 }
 
-func (c *articleServiceClient) GetArticle(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (*GetArticleResponse, error) {
+func (c *articleServiceClient) GetArticleByUser(ctx context.Context, in *GetAllArticleByUserRequest, opts ...grpc.CallOption) (*GetAllArticleResponse, error) {
+	out := new(GetAllArticleResponse)
+	err := c.cc.Invoke(ctx, "/proto.ArticleService/GetArticleByUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *articleServiceClient) GetAllArticle(ctx context.Context, in *GetAllArticleRequest, opts ...grpc.CallOption) (*GetAllArticleResponse, error) {
+	out := new(GetAllArticleResponse)
+	err := c.cc.Invoke(ctx, "/proto.ArticleService/GetAllArticle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *articleServiceClient) GetArticleById(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (*GetArticleResponse, error) {
 	out := new(GetArticleResponse)
-	err := c.cc.Invoke(ctx, "/proto.ArticleService/GetArticle", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.ArticleService/GetArticleById", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +73,9 @@ func (c *articleServiceClient) GetArticle(ctx context.Context, in *GetArticleReq
 // for forward compatibility
 type ArticleServiceServer interface {
 	CreateArticle(context.Context, *CreateArticleRequest) (*CreateArticleResponse, error)
-	GetArticle(context.Context, *GetArticleRequest) (*GetArticleResponse, error)
+	GetArticleByUser(context.Context, *GetAllArticleByUserRequest) (*GetAllArticleResponse, error)
+	GetAllArticle(context.Context, *GetAllArticleRequest) (*GetAllArticleResponse, error)
+	GetArticleById(context.Context, *GetArticleRequest) (*GetArticleResponse, error)
 	mustEmbedUnimplementedArticleServiceServer()
 }
 
@@ -64,8 +86,14 @@ type UnimplementedArticleServiceServer struct {
 func (UnimplementedArticleServiceServer) CreateArticle(context.Context, *CreateArticleRequest) (*CreateArticleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateArticle not implemented")
 }
-func (UnimplementedArticleServiceServer) GetArticle(context.Context, *GetArticleRequest) (*GetArticleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetArticle not implemented")
+func (UnimplementedArticleServiceServer) GetArticleByUser(context.Context, *GetAllArticleByUserRequest) (*GetAllArticleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetArticleByUser not implemented")
+}
+func (UnimplementedArticleServiceServer) GetAllArticle(context.Context, *GetAllArticleRequest) (*GetAllArticleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllArticle not implemented")
+}
+func (UnimplementedArticleServiceServer) GetArticleById(context.Context, *GetArticleRequest) (*GetArticleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetArticleById not implemented")
 }
 func (UnimplementedArticleServiceServer) mustEmbedUnimplementedArticleServiceServer() {}
 
@@ -98,20 +126,56 @@ func _ArticleService_CreateArticle_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ArticleService_GetArticle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ArticleService_GetArticleByUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllArticleByUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticleServiceServer).GetArticleByUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.ArticleService/GetArticleByUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticleServiceServer).GetArticleByUser(ctx, req.(*GetAllArticleByUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ArticleService_GetAllArticle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllArticleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticleServiceServer).GetAllArticle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.ArticleService/GetAllArticle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticleServiceServer).GetAllArticle(ctx, req.(*GetAllArticleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ArticleService_GetArticleById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetArticleRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ArticleServiceServer).GetArticle(ctx, in)
+		return srv.(ArticleServiceServer).GetArticleById(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.ArticleService/GetArticle",
+		FullMethod: "/proto.ArticleService/GetArticleById",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ArticleServiceServer).GetArticle(ctx, req.(*GetArticleRequest))
+		return srv.(ArticleServiceServer).GetArticleById(ctx, req.(*GetArticleRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -128,8 +192,16 @@ var ArticleService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ArticleService_CreateArticle_Handler,
 		},
 		{
-			MethodName: "GetArticle",
-			Handler:    _ArticleService_GetArticle_Handler,
+			MethodName: "GetArticleByUser",
+			Handler:    _ArticleService_GetArticleByUser_Handler,
+		},
+		{
+			MethodName: "GetAllArticle",
+			Handler:    _ArticleService_GetAllArticle_Handler,
+		},
+		{
+			MethodName: "GetArticleById",
+			Handler:    _ArticleService_GetArticleById_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

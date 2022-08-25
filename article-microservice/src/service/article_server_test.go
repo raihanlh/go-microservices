@@ -79,6 +79,7 @@ func TestArticleService(t *testing.T) {
 	defer conn.Close()
 
 	client := pb.NewArticleServiceClient(conn)
+	var id int64
 
 	t.Run("Ensure create article is success", func(t *testing.T) {
 		res, err := client.CreateArticle(ctx, &pb.CreateArticleRequest{
@@ -89,6 +90,19 @@ func TestArticleService(t *testing.T) {
 		if err != nil {
 			t.Log(err)
 			t.Errorf("Create article test failed")
+		}
+		t.Log(res)
+		fmt.Println(res)
+		id = res.Article.Id
+	})
+
+	t.Run("Ensure get article is success", func(t *testing.T) {
+		res, err := client.GetArticleById(ctx, &pb.GetArticleRequest{
+			Id: id,
+		})
+		if err != nil {
+			t.Log(err)
+			t.Errorf("Get article test failed")
 		}
 		t.Log(res)
 		fmt.Println(res)
