@@ -22,6 +22,8 @@ type ArticleServiceClient interface {
 	GetArticleByUser(ctx context.Context, in *GetAllArticleByUserRequest, opts ...grpc.CallOption) (*GetAllArticleResponse, error)
 	GetAllArticle(ctx context.Context, in *GetAllArticleRequest, opts ...grpc.CallOption) (*GetAllArticleResponse, error)
 	GetArticleById(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (*GetArticleResponse, error)
+	UpdateArticle(ctx context.Context, in *UpdateArticleRequest, opts ...grpc.CallOption) (*GetArticleResponse, error)
+	DeleteArticle(ctx context.Context, in *DeleteArticleRequest, opts ...grpc.CallOption) (*DeleteArticleResponse, error)
 }
 
 type articleServiceClient struct {
@@ -68,6 +70,24 @@ func (c *articleServiceClient) GetArticleById(ctx context.Context, in *GetArticl
 	return out, nil
 }
 
+func (c *articleServiceClient) UpdateArticle(ctx context.Context, in *UpdateArticleRequest, opts ...grpc.CallOption) (*GetArticleResponse, error) {
+	out := new(GetArticleResponse)
+	err := c.cc.Invoke(ctx, "/proto.ArticleService/UpdateArticle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *articleServiceClient) DeleteArticle(ctx context.Context, in *DeleteArticleRequest, opts ...grpc.CallOption) (*DeleteArticleResponse, error) {
+	out := new(DeleteArticleResponse)
+	err := c.cc.Invoke(ctx, "/proto.ArticleService/DeleteArticle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ArticleServiceServer is the server API for ArticleService service.
 // All implementations must embed UnimplementedArticleServiceServer
 // for forward compatibility
@@ -76,6 +96,8 @@ type ArticleServiceServer interface {
 	GetArticleByUser(context.Context, *GetAllArticleByUserRequest) (*GetAllArticleResponse, error)
 	GetAllArticle(context.Context, *GetAllArticleRequest) (*GetAllArticleResponse, error)
 	GetArticleById(context.Context, *GetArticleRequest) (*GetArticleResponse, error)
+	UpdateArticle(context.Context, *UpdateArticleRequest) (*GetArticleResponse, error)
+	DeleteArticle(context.Context, *DeleteArticleRequest) (*DeleteArticleResponse, error)
 	mustEmbedUnimplementedArticleServiceServer()
 }
 
@@ -94,6 +116,12 @@ func (UnimplementedArticleServiceServer) GetAllArticle(context.Context, *GetAllA
 }
 func (UnimplementedArticleServiceServer) GetArticleById(context.Context, *GetArticleRequest) (*GetArticleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetArticleById not implemented")
+}
+func (UnimplementedArticleServiceServer) UpdateArticle(context.Context, *UpdateArticleRequest) (*GetArticleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateArticle not implemented")
+}
+func (UnimplementedArticleServiceServer) DeleteArticle(context.Context, *DeleteArticleRequest) (*DeleteArticleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteArticle not implemented")
 }
 func (UnimplementedArticleServiceServer) mustEmbedUnimplementedArticleServiceServer() {}
 
@@ -180,6 +208,42 @@ func _ArticleService_GetArticleById_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ArticleService_UpdateArticle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateArticleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticleServiceServer).UpdateArticle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.ArticleService/UpdateArticle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticleServiceServer).UpdateArticle(ctx, req.(*UpdateArticleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ArticleService_DeleteArticle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteArticleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticleServiceServer).DeleteArticle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.ArticleService/DeleteArticle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticleServiceServer).DeleteArticle(ctx, req.(*DeleteArticleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ArticleService_ServiceDesc is the grpc.ServiceDesc for ArticleService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -202,6 +266,14 @@ var ArticleService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetArticleById",
 			Handler:    _ArticleService_GetArticleById_Handler,
+		},
+		{
+			MethodName: "UpdateArticle",
+			Handler:    _ArticleService_UpdateArticle_Handler,
+		},
+		{
+			MethodName: "DeleteArticle",
+			Handler:    _ArticleService_DeleteArticle_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

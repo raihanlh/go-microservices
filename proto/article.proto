@@ -38,9 +38,28 @@ message GetAllArticleResponse {
 
 message GetAllArticleRequest {}
 
+message UpdateArticleRequest {
+  int64 id = 1;
+  string title = 2;
+  string content = 3;
+  string token = 4;
+}
+
+message DeleteArticleRequest {
+  int64 id = 1;
+  string token = 2;
+}
+
+message DeleteArticleResponse {
+  string status = 1;
+  string message = 2;
+}
+
 service ArticleService {
   rpc CreateArticle(CreateArticleRequest) returns (CreateArticleResponse) {}
   rpc GetArticleByUser(GetAllArticleByUserRequest) returns (GetAllArticleResponse) {}
   rpc GetAllArticle(GetAllArticleRequest) returns (GetAllArticleResponse) {}
   rpc GetArticleById(GetArticleRequest) returns (GetArticleResponse) {}
+  rpc UpdateArticle(UpdateArticleRequest) returns (GetArticleResponse) {}
+  rpc DeleteArticle(DeleteArticleRequest) returns (DeleteArticleResponse) {}
 }
