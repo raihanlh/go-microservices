@@ -2,6 +2,7 @@ package routes
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,7 +18,7 @@ func RouteAll(app *fiber.App, authService pb.AuthServiceClient, routers ...Route
 	app.Use(middlewares.NewAuthMiddleware(middlewares.AuthMiddlewareConfig{
 		Filter: func(c *fiber.Ctx) bool {
 			path := c.OriginalURL()
-			var unprotected = []string{"/login", "/register"}
+			var unprotected = []string{"\\/login", "\\/register", "\\/article\\/[\\d]"}
 
 			if contains(unprotected, path) {
 				return true
@@ -45,9 +46,12 @@ func RouteAll(app *fiber.App, authService pb.AuthServiceClient, routers ...Route
 
 func contains(s []string, el string) bool {
 	for _, a := range s {
-		if a == el {
+		if matched, _ := regexp.MatchString(a, el); matched {
 			return true
 		}
+		// if a == el {
+		// 	return true
+		// }
 	}
 	return false
 }

@@ -6,8 +6,9 @@ import (
 )
 
 type ArticleRepository interface {
-	Save(Article *entity.Article) (entity.Article, error)
-	Update(Article *entity.Article) (entity.Article, error)
+	Save(article *entity.Article) (entity.Article, error)
+	Update(article *entity.Article) (*pb.GetArticleResponse, error)
+	Delete(id int64) error
 	FindById(id int64) (entity.Article, error)
 	FindAllByUserId(user_id int64) ([]*pb.GetArticleResponse, error)
 	FindAll() ([]*pb.GetArticleResponse, error)

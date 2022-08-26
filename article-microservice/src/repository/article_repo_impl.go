@@ -44,9 +44,6 @@ func (repo *ArticleRepositoryImpl) Save(article *entity.Article) (entity.Article
 	}, nil
 }
 
-func (repo *ArticleRepositoryImpl) Update(Article *entity.Article) (entity.Article, error) {
-	return entity.Article{}, nil
-}
 func (repo *ArticleRepositoryImpl) FindById(id int64) (entity.Article, error) {
 	const query = `SELECT title, content, created_at, updated_at FROM articles a WHERE a.id = $1`
 	var title string
@@ -71,7 +68,7 @@ func (repo *ArticleRepositoryImpl) FindById(id int64) (entity.Article, error) {
 }
 
 func (repo *ArticleRepositoryImpl) FindAllByUserId(user_id int64) ([]*pb.GetArticleResponse, error) {
-	const query = `select ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id WHERE ac.id = $1`
+	const query = `SELECT ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id WHERE ac.id = $1`
 
 	articles := make([]*pb.GetArticleResponse, 0)
 	rows, err := repo.DB.Query(query, user_id)
@@ -105,7 +102,7 @@ func (repo *ArticleRepositoryImpl) FindAllByUserId(user_id int64) ([]*pb.GetArti
 }
 
 func (repo *ArticleRepositoryImpl) FindAll() ([]*pb.GetArticleResponse, error) {
-	const query = `select ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id`
+	const query = `SELECT ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id`
 
 	articles := make([]*pb.GetArticleResponse, 0)
 	rows, err := repo.DB.Query(query)
@@ -136,4 +133,22 @@ func (repo *ArticleRepositoryImpl) FindAll() ([]*pb.GetArticleResponse, error) {
 	}
 
 	return articles, nil
+}
+
+func (repo *ArticleRepositoryImpl) Update(article *entity.Article) (*pb.GetArticleResponse, error) {
+	// title := ""
+	// content := ""
+
+	// if article.Title != nil {
+	// 	title = article.Title
+	// }
+	// if article.Content != nil {
+	// 	content = article.Content
+	// }
+	// query := fmt.Sprintf(`UPDATE articles a SET title = $1, content = $2, created_at = $3, updated_at = $4 WHERE a.id = $5`)
+	return &pb.GetArticleResponse{}, nil
+}
+
+func (repo *ArticleRepositoryImpl) Delete(id int64) error {
+	return nil
 }
