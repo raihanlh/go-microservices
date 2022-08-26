@@ -69,11 +69,46 @@ func (repo *ArticleRepositoryImpl) FindById(id int64) (entity.Article, error) {
 		UpdatedAt: updated_at,
 	}, nil
 }
+
 func (repo *ArticleRepositoryImpl) FindAllByUserId(user_id int64) ([]*pb.GetArticleResponse, error) {
 	const query = `select ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id WHERE ac.id = $1`
 
 	articles := make([]*pb.GetArticleResponse, 0)
 	rows, err := repo.DB.Query(query, user_id)
+	if err != nil {
+		return make([]*pb.GetArticleResponse, 0), err
+	}
+
+	for rows.Next() {
+		var id int64
+		var title string
+		var content string
+		var created_at time.Time
+		var updated_at time.Time
+
+		err = rows.Scan(&id, &title, &content, &created_at, &updated_at)
+
+		if err != nil {
+			return make([]*pb.GetArticleResponse, 0), err
+		}
+
+		articles = append(articles, &pb.GetArticleResponse{
+			Id:        id,
+			Title:     title,
+			Content:   content,
+			CreatedAt: timestamppb.New(created_at),
+			UpdatedAt: timestamppb.New(updated_at),
+		})
+	}
+
+	return articles, nil
+}
+
+func (repo *ArticleRepositoryImpl) FindAll() ([]*pb.GetArticleResponse, error) {
+	const query = `select ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id`
+
+	articles := make([]*pb.GetArticleResponse, 0)
+	rows, err := repo.DB.Query(query)
 	if err != nil {
 		return make([]*pb.GetArticleResponse, 0), err
 	}

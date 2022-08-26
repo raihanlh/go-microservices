@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
+	// "encoding/json"
 	"fmt"
 	_ "github.com/lib/pq"
 	pb "github.com/raihanlh/go-article-microservice/proto"
@@ -81,12 +81,13 @@ func TestArticleService(t *testing.T) {
 
 	client := pb.NewArticleServiceClient(conn)
 	var id int64
+	auth_token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAbG9jYWwuaG9zdCIsImV4cCI6MTY2MTc3NDMyMCwiaWQiOjl9._YicKqEmN6M7NY8ZZkaVk6N0B8e9UOUvl_7UavS7NQ4"
 
 	t.Run("Ensure create article is success", func(t *testing.T) {
 		res, err := client.CreateArticle(ctx, &pb.CreateArticleRequest{
 			Title:   "Test",
 			Content: "Test content",
-			Token:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAbG9jYWwuaG9zdCIsImV4cCI6MTY2MTUwMDUyMCwiaWQiOjl9.O63PMfYfxAhf54_4ANuFc4vlgL4yjPSNNyZdcuZb6fE",
+			Token:   auth_token,
 		})
 		if err != nil {
 			t.Log(err)
@@ -109,17 +110,33 @@ func TestArticleService(t *testing.T) {
 
 	t.Run("Ensure get all article owned by a user id is success", func(t *testing.T) {
 		res, err := client.GetArticleByUser(ctx, &pb.GetAllArticleByUserRequest{
-			Token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAbG9jYWwuaG9zdCIsImV4cCI6MTY2MTUwMDUyMCwiaWQiOjl9.O63PMfYfxAhf54_4ANuFc4vlgL4yjPSNNyZdcuZb6fE",
+			Token: auth_token,
 		})
 		if err != nil {
 			t.Log(err)
-			t.Errorf("Get article test failed")
+			t.Errorf("Get article by user token test failed")
 		}
+		t.Log(res)
 
-		result, err := json.MarshalIndent(res, "", " ")
+		// result, err := json.MarshalIndent(res, "", " ")
+		// if err != nil {
+		// 	t.Log(err)
+		// }
+		// fmt.Println(string(result))
+	})
+
+	t.Run("Ensure get all article is success", func(t *testing.T) {
+		res, err := client.GetAllArticle(ctx, &pb.GetAllArticleRequest{})
 		if err != nil {
 			t.Log(err)
+			t.Errorf("Get all article test failed")
 		}
-		fmt.Println(string(result))
+		t.Log(res)
+
+		// result, err := json.MarshalIndent(res, "", " ")
+		// if err != nil {
+		// 	t.Log(err)
+		// }
+		// fmt.Println(string(result))
 	})
 }
