@@ -97,3 +97,7 @@ func (a *ArticleServer) GetAllArticle(ctx context.Context, req *pb.GetAllArticle
 	}, nil
 
 }
+
+func (a *ArticleServer) UpdateArticle(ctx context.Context, req *pb.UpdateArticleRequest) (*pb.GetArticleResponse, error) {
+	return &pb.GetArticleResponse{}, nil
+}
