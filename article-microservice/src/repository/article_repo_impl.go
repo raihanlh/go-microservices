@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -45,17 +46,25 @@ func (repo *ArticleRepositoryImpl) Save(article *entity.Article) (entity.Article
 }
 
 func (repo *ArticleRepositoryImpl) FindById(id int64) (entity.Article, error) {
-	const query = `SELECT title, content, created_at, updated_at FROM articles a WHERE a.id = $1`
+	const query = `SELECT id_user, title, content, created_at, updated_at, deleted_at FROM articles a WHERE a.id = $1 AND deleted_at IS NULL`
 	var title string
 	var content string
 	var created_at time.Time
 	var updated_at time.Time
+	var deleted_at sql.NullTime
+	var id_user int64
 
 	err := repo.DB.QueryRow(query, id).Scan(
-		&title, &content, &created_at, &updated_at)
+		&id_user, &title, &content, &created_at, &updated_at, &deleted_at)
 	if err != nil {
 		fmt.Println(err)
 		return entity.Article{}, err
+	}
+
+	// Check if article has been deleted or not
+	fmt.Println(deleted_at.Valid)
+	if deleted_at.Valid {
+		return entity.Article{}, errors.New("article has been deleted")
 	}
 
 	return entity.Article{
@@ -64,11 +73,13 @@ func (repo *ArticleRepositoryImpl) FindById(id int64) (entity.Article, error) {
 		Content:   content,
 		CreatedAt: created_at,
 		UpdatedAt: updated_at,
+		DeletedAt: deleted_at,
+		AccountId: id_user,
 	}, nil
 }
 
 func (repo *ArticleRepositoryImpl) FindAllByUserId(user_id int64) ([]*pb.GetArticleResponse, error) {
-	const query = `SELECT ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id WHERE ac.id = $1`
+	const query = `SELECT ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id WHERE ac.id = $1 AND ar.deleted_at IS NULL`
 
 	articles := make([]*pb.GetArticleResponse, 0)
 	rows, err := repo.DB.Query(query, user_id)
@@ -102,7 +113,7 @@ func (repo *ArticleRepositoryImpl) FindAllByUserId(user_id int64) ([]*pb.GetArti
 }
 
 func (repo *ArticleRepositoryImpl) FindAll() ([]*pb.GetArticleResponse, error) {
-	const query = `SELECT ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id`
+	const query = `SELECT ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id WHERE ar.deleted_at IS NULL`
 
 	articles := make([]*pb.GetArticleResponse, 0)
 	rows, err := repo.DB.Query(query)
@@ -136,11 +147,11 @@ func (repo *ArticleRepositoryImpl) FindAll() ([]*pb.GetArticleResponse, error) {
 }
 
 func (repo *ArticleRepositoryImpl) Update(article *entity.Article) (*pb.GetArticleResponse, error) {
-	query := `UPDATE articles a SET title = $1, content = $2, updated_at = $3 WHERE a.id = $4 RETURNING created_at, updated_at`
+	query := `UPDATE articles a SET title = $1, content = $2, updated_at = $3 WHERE a.id = $4 AND deleted_at IS NULL RETURNING created_at, updated_at`
 
 	var created_at time.Time
 	var updated_at time.Time
-	// result, err := repo.DB.Exec(query, article.Title, article.Content, time.Now(), article.Id)
+
 	err := repo.DB.QueryRow(query, article.Title, article.Content, time.Now(), article.Id).Scan(&created_at, &updated_at)
 	if err != nil {
 		fmt.Println(err)
@@ -157,5 +168,10 @@ func (repo *ArticleRepositoryImpl) Update(article *entity.Article) (*pb.GetArtic
 }
 
 func (repo *ArticleRepositoryImpl) Delete(id int64) error {
+	query := `UPDATE articles a SET deleted_at = $1 WHERE a.id = $2`
+	_, err := repo.DB.Exec(query, time.Now(), id)
+	if err != nil {
+		return err
+	}
 	return nil
 }

@@ -6,6 +6,8 @@ import (
 	pb "github.com/raihanlh/go-article-microservice/proto"
 	"github.com/raihanlh/go-article-microservice/src/entity"
 	"github.com/raihanlh/go-article-microservice/src/repository"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -53,8 +55,8 @@ func (a *ArticleServer) CreateArticle(ctx context.Context, req *pb.CreateArticle
 
 func (a *ArticleServer) GetArticleById(ctx context.Context, req *pb.GetArticleRequest) (*pb.GetArticleResponse, error) {
 	article, err := a.ArticleRepository.FindById(req.Id)
-	if err != nil {
-		return &pb.GetArticleResponse{}, err
+	if (err != nil) || (article.DeletedAt.Valid) {
+		return &pb.GetArticleResponse{}, status.Error(codes.NotFound, "article not found")
 	}
 
 	return &pb.GetArticleResponse{
@@ -99,14 +101,59 @@ func (a *ArticleServer) GetAllArticle(ctx context.Context, req *pb.GetAllArticle
 }
 
 func (a *ArticleServer) UpdateArticle(ctx context.Context, req *pb.UpdateArticleRequest) (*pb.GetArticleResponse, error) {
+	var user *pb.GetUserResponse
+	user, err := a.AuthService.GetByToken(ctx, &pb.GetByTokenRequest{
+		Token: req.Token,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	article, err := a.ArticleRepository.FindById(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	if article.AccountId != user.Id {
+		return nil, status.Error(codes.PermissionDenied, "unauthorized")
+	}
+
 	res, err := a.ArticleRepository.Update(&entity.Article{
-		Id:      req.Id,
-		Title:   req.Title,
-		Content: req.Content,
+		Id:        req.Id,
+		Title:     req.Title,
+		Content:   req.Content,
+		AccountId: user.Id,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	return res, nil
+}
+
+func (a *ArticleServer) DeleteArticle(ctx context.Context, req *pb.DeleteArticleRequest) (*pb.DeleteArticleResponse, error) {
+	var user *pb.GetUserResponse
+	user, err := a.AuthService.GetByToken(ctx, &pb.GetByTokenRequest{
+		Token: req.Token,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	article, err := a.ArticleRepository.FindById(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	if article.AccountId != user.Id {
+		return nil, status.Error(codes.PermissionDenied, "unauthorized")
+	}
+
+	err = a.ArticleRepository.Delete(req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.DeleteArticleResponse{
+		Status:  "201",
+		Message: "Success",
+	}, nil
 }

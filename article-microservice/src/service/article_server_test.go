@@ -81,61 +81,61 @@ func TestArticleService(t *testing.T) {
 
 	client := pb.NewArticleServiceClient(conn)
 	auth_token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAbG9jYWwuaG9zdCIsImV4cCI6MTY2MTc3NDMyMCwiaWQiOjl9._YicKqEmN6M7NY8ZZkaVk6N0B8e9UOUvl_7UavS7NQ4"
-	// var id int64
+	var id int64
 
-	// t.Run("Ensure create article is success", func(t *testing.T) {
-	// 	res, err := client.CreateArticle(ctx, &pb.CreateArticleRequest{
-	// 		Title:   "Test",
-	// 		Content: "Test content",
-	// 		Token:   auth_token,
-	// 	})
-	// 	if err != nil {
-	// 		t.Log(err)
-	// 		t.Errorf("Create article test failed")
-	// 	}
-	// 	t.Log(res)
-	// 	id = res.Article.Id
-	// })
+	t.Run("Ensure create article is success", func(t *testing.T) {
+		res, err := client.CreateArticle(ctx, &pb.CreateArticleRequest{
+			Title:   "Test",
+			Content: "Test content",
+			Token:   auth_token,
+		})
+		if err != nil {
+			t.Log(err)
+			t.Errorf("Create article test failed")
+		}
+		t.Log(res)
+		id = res.Article.Id
+	})
 
-	// t.Run("Ensure get article is success", func(t *testing.T) {
-	// 	res, err := client.GetArticleById(ctx, &pb.GetArticleRequest{
-	// 		Id: id,
-	// 	})
-	// 	if err != nil {
-	// 		t.Log(err)
-	// 		t.Errorf("Get article test failed")
-	// 	}
-	// 	t.Log(res)
-	// })
+	t.Run("Ensure get article is success", func(t *testing.T) {
+		res, err := client.GetArticleById(ctx, &pb.GetArticleRequest{
+			Id: id,
+		})
+		if err != nil {
+			t.Log(err)
+			t.Errorf("Get article test failed")
+		}
+		t.Log(res)
+	})
 
-	// t.Run("Ensure get all article owned by a user id is success", func(t *testing.T) {
-	// 	res, err := client.GetArticleByUser(ctx, &pb.GetAllArticleByUserRequest{
-	// 		Token: auth_token,
-	// 	})
-	// 	if err != nil {
-	// 		t.Log(err)
-	// 		t.Errorf("Get article by user token test failed")
-	// 	}
-	// 	t.Log(res)
-	// 	// result, err := json.MarshalIndent(res, "", " ")
-	// 	// if err != nil {
-	// 	// 	t.Log(err)
-	// 	// }
-	// 	// fmt.Println(string(result))
-	// })
-	// t.Run("Ensure get all article is success", func(t *testing.T) {
-	// 	res, err := client.GetAllArticle(ctx, &pb.GetAllArticleRequest{})
-	// 	if err != nil {
-	// 		t.Log(err)
-	// 		t.Errorf("Get all article test failed")
-	// 	}
-	// 	t.Log(res)
-	// 	// result, err := json.MarshalIndent(res, "", " ")
-	// 	// if err != nil {
-	// 	// 	t.Log(err)
-	// 	// }
-	// 	// fmt.Println(string(result))
-	// })
+	t.Run("Ensure get all article owned by a user id is success", func(t *testing.T) {
+		res, err := client.GetArticleByUser(ctx, &pb.GetAllArticleByUserRequest{
+			Token: auth_token,
+		})
+		if err != nil {
+			t.Log(err)
+			t.Errorf("Get article by user token test failed")
+		}
+		t.Log(res)
+		// result, err := json.MarshalIndent(res, "", " ")
+		// if err != nil {
+		// 	t.Log(err)
+		// }
+		// fmt.Println(string(result))
+	})
+	t.Run("Ensure get all article is success", func(t *testing.T) {
+		res, err := client.GetAllArticle(ctx, &pb.GetAllArticleRequest{})
+		if err != nil {
+			t.Log(err)
+			t.Errorf("Get all article test failed")
+		}
+		t.Log(res)
+		// result, err := json.MarshalIndent(res, "", " ")
+		// if err != nil {
+		// 	t.Log(err)
+		// }
+		// fmt.Println(string(result))
+	})
 
 	t.Run("Ensure update article is success", func(t *testing.T) {
 		res, err := client.UpdateArticle(ctx, &pb.UpdateArticleRequest{
@@ -147,6 +147,23 @@ func TestArticleService(t *testing.T) {
 		if err != nil {
 			t.Log(err)
 			t.Errorf("Update article test failed")
+		}
+		t.Log(res)
+		result, err := json.MarshalIndent(res, "", " ")
+		if err != nil {
+			t.Log(err)
+		}
+		fmt.Println(string(result))
+	})
+
+	t.Run("Ensure delete article is success", func(t *testing.T) {
+		res, err := client.DeleteArticle(ctx, &pb.DeleteArticleRequest{
+			Id:    11,
+			Token: auth_token,
+		})
+		if err != nil {
+			t.Log(err)
+			t.Errorf("Delete article test failed")
 		}
 		t.Log(res)
 		result, err := json.MarshalIndent(res, "", " ")
