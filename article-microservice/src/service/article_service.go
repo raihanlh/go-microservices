@@ -38,16 +38,8 @@ func (a *ArticleServer) CreateArticle(ctx context.Context, req *pb.CreateArticle
 		return nil, err
 	}
 
-	res := pb.GetArticleResponse{
-		Id:        article.Id,
-		Title:     article.Title,
-		Content:   article.Content,
-		CreatedAt: timestamppb.New(article.CreatedAt),
-		UpdatedAt: timestamppb.New(article.UpdatedAt),
-	}
-
 	return &pb.CreateArticleResponse{
-		Article: &res,
+		Article: article,
 		Message: "Article created succesfully",
 		Status:  "201",
 	}, nil

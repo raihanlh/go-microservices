@@ -6,7 +6,7 @@ import (
 )
 
 type ArticleRepository interface {
-	Save(article *entity.Article) (entity.Article, error)
+	Save(article *entity.Article) (*pb.GetArticleResponse, error)
 	Update(article *entity.Article) (*pb.GetArticleResponse, error)
 	Delete(id int64) error
 	FindById(id int64) (entity.Article, error)

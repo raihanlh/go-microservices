@@ -21,27 +21,29 @@ func NewArticleRepository(db *sql.DB) ArticleRepository {
 	}
 }
 
-func (repo *ArticleRepositoryImpl) Save(article *entity.Article) (entity.Article, error) {
+func (repo *ArticleRepositoryImpl) Save(article *entity.Article) (*pb.GetArticleResponse, error) {
 	// Prepare statement
-	const query = `INSERT INTO articles (id_user, title, content) VALUES ($1, $2, $3) RETURNING id, created_at, updated_at`
+	const query = `INSERT INTO articles (id_user, title, content) VALUES ($1, $2, $3) RETURNING id, title, content, created_at, updated_at`
 	var id int64
+	var title string
+	var content string
 	var created_at time.Time
 	var updated_at time.Time
 
 	// Query to db and return id
-	err := repo.DB.QueryRow(query, article.AccountId, article.Title, article.Content).Scan(&id, &created_at, &updated_at)
-	// result, err := repo.DB.Exec(query, article.AccountId, article.Title, article.Content).Scan(&id, &created_at, &updated_at)
+	err := repo.DB.QueryRow(query, article.AccountId, article.Title, article.Content).Scan(&id, &title, &content, &created_at, &updated_at)
+
 	if err != nil {
 		fmt.Println(err.Error())
-		return entity.Article{}, err
+		return nil, err
 	}
 
-	return entity.Article{
+	return &pb.GetArticleResponse{
 		Id:        id,
-		Title:     article.Title,
-		Content:   article.Content,
-		CreatedAt: created_at,
-		UpdatedAt: updated_at,
+		Title:     title,
+		Content:   content,
+		CreatedAt: timestamppb.New(created_at),
+		UpdatedAt: timestamppb.New(updated_at),
 	}, nil
 }
 
@@ -62,7 +64,6 @@ func (repo *ArticleRepositoryImpl) FindById(id int64) (entity.Article, error) {
 	}
 
 	// Check if article has been deleted or not
-	fmt.Println(deleted_at.Valid)
 	if deleted_at.Valid {
 		return entity.Article{}, errors.New("article has been deleted")
 	}

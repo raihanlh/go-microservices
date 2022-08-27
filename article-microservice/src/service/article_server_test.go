@@ -95,6 +95,10 @@ func TestArticleService(t *testing.T) {
 		}
 		t.Log(res)
 		id = res.Article.Id
+		err = PrintResult(res)
+		if err != nil {
+			t.Log(err)
+		}
 	})
 
 	t.Run("Ensure get article is success", func(t *testing.T) {
@@ -106,6 +110,10 @@ func TestArticleService(t *testing.T) {
 			t.Errorf("Get article test failed")
 		}
 		t.Log(res)
+		err = PrintResult(res)
+		if err != nil {
+			t.Log(err)
+		}
 	})
 
 	t.Run("Ensure get all article owned by a user id is success", func(t *testing.T) {
@@ -117,12 +125,12 @@ func TestArticleService(t *testing.T) {
 			t.Errorf("Get article by user token test failed")
 		}
 		t.Log(res)
-		// result, err := json.MarshalIndent(res, "", " ")
-		// if err != nil {
-		// 	t.Log(err)
-		// }
-		// fmt.Println(string(result))
+		err = PrintResult(res)
+		if err != nil {
+			t.Log(err)
+		}
 	})
+
 	t.Run("Ensure get all article is success", func(t *testing.T) {
 		res, err := client.GetAllArticle(ctx, &pb.GetAllArticleRequest{})
 		if err != nil {
@@ -130,16 +138,15 @@ func TestArticleService(t *testing.T) {
 			t.Errorf("Get all article test failed")
 		}
 		t.Log(res)
-		// result, err := json.MarshalIndent(res, "", " ")
-		// if err != nil {
-		// 	t.Log(err)
-		// }
-		// fmt.Println(string(result))
+		err = PrintResult(res)
+		if err != nil {
+			t.Log(err)
+		}
 	})
 
 	t.Run("Ensure update article is success", func(t *testing.T) {
 		res, err := client.UpdateArticle(ctx, &pb.UpdateArticleRequest{
-			Id:      5,
+			Id:      id,
 			Title:   "Updated Title",
 			Content: "Updated Content",
 			Token:   auth_token,
@@ -149,16 +156,15 @@ func TestArticleService(t *testing.T) {
 			t.Errorf("Update article test failed")
 		}
 		t.Log(res)
-		result, err := json.MarshalIndent(res, "", " ")
+		err = PrintResult(res)
 		if err != nil {
 			t.Log(err)
 		}
-		fmt.Println(string(result))
 	})
 
 	t.Run("Ensure delete article is success", func(t *testing.T) {
 		res, err := client.DeleteArticle(ctx, &pb.DeleteArticleRequest{
-			Id:    11,
+			Id:    id,
 			Token: auth_token,
 		})
 		if err != nil {
@@ -166,10 +172,18 @@ func TestArticleService(t *testing.T) {
 			t.Errorf("Delete article test failed")
 		}
 		t.Log(res)
-		result, err := json.MarshalIndent(res, "", " ")
+		err = PrintResult(res)
 		if err != nil {
 			t.Log(err)
 		}
-		fmt.Println(string(result))
 	})
+}
+
+func PrintResult(res interface{}) error {
+	result, err := json.MarshalIndent(res, "", " ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(result))
+	return nil
 }
