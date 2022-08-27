@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
-	// "encoding/json"
+	"encoding/json"
 	"fmt"
 	_ "github.com/lib/pq"
 	pb "github.com/raihanlh/go-article-microservice/proto"
@@ -149,5 +149,10 @@ func TestArticleService(t *testing.T) {
 			t.Errorf("Update article test failed")
 		}
 		t.Log(res)
+		result, err := json.MarshalIndent(res, "", " ")
+		if err != nil {
+			t.Log(err)
+		}
+		fmt.Println(string(result))
 	})
 }

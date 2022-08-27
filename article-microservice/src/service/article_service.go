@@ -99,5 +99,14 @@ func (a *ArticleServer) GetAllArticle(ctx context.Context, req *pb.GetAllArticle
 }
 
 func (a *ArticleServer) UpdateArticle(ctx context.Context, req *pb.UpdateArticleRequest) (*pb.GetArticleResponse, error) {
-	return &pb.GetArticleResponse{}, nil
+	res, err := a.ArticleRepository.Update(&entity.Article{
+		Id:      req.Id,
+		Title:   req.Title,
+		Content: req.Content,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

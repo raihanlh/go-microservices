@@ -136,17 +136,24 @@ func (repo *ArticleRepositoryImpl) FindAll() ([]*pb.GetArticleResponse, error) {
 }
 
 func (repo *ArticleRepositoryImpl) Update(article *entity.Article) (*pb.GetArticleResponse, error) {
-	// title := ""
-	// content := ""
+	query := `UPDATE articles a SET title = $1, content = $2, updated_at = $3 WHERE a.id = $4 RETURNING created_at, updated_at`
 
-	// if article.Title != nil {
-	// 	title = article.Title
-	// }
-	// if article.Content != nil {
-	// 	content = article.Content
-	// }
-	// query := fmt.Sprintf(`UPDATE articles a SET title = $1, content = $2, created_at = $3, updated_at = $4 WHERE a.id = $5`)
-	return &pb.GetArticleResponse{}, nil
+	var created_at time.Time
+	var updated_at time.Time
+	// result, err := repo.DB.Exec(query, article.Title, article.Content, time.Now(), article.Id)
+	err := repo.DB.QueryRow(query, article.Title, article.Content, time.Now(), article.Id).Scan(&created_at, &updated_at)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return &pb.GetArticleResponse{
+		Id:        article.Id,
+		Title:     article.Title,
+		Content:   article.Content,
+		CreatedAt: timestamppb.New(created_at),
+		UpdatedAt: timestamppb.New(updated_at),
+	}, nil
 }
 
 func (repo *ArticleRepositoryImpl) Delete(id int64) error {
