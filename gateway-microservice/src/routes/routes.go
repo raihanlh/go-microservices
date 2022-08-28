@@ -2,6 +2,7 @@ package routes
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -15,24 +16,34 @@ type Router interface {
 }
 
 func RouteAll(app *fiber.App, authService pb.AuthServiceClient, routers ...Router) {
+	// Use authentication middleware
 	app.Use(middlewares.NewAuthMiddleware(middlewares.AuthMiddlewareConfig{
 		Filter: func(c *fiber.Ctx) bool {
 			path := c.OriginalURL()
-			var unprotected = []string{"\\/login", "\\/register", "\\/article\\/[\\d]"}
+			// var unprotected = []string{"\\/login", "\\/register", "\\/articles\\/[\\d]"}
+			var protected = []string{"\\/user"}
 
-			if contains(unprotected, path) {
-				return true
+			// if contains(path, unprotected) {
+			// 	return true
+			// }
+
+			if contains(path, protected) {
+				token := c.Get("Authorization", "")
+				fmt.Println(token)
+				if strings.HasPrefix(token, "Bearer ") {
+					token = strings.Split(token, "Bearer ")[1]
+				}
+
+				req := &pb.GetByTokenRequest{
+					Token: token,
+				}
+
+				_, err := authService.GetByToken(context.Background(), req)
+				return err == nil
 			}
 
-			authHeader := c.Get("Authorization")
-			token := strings.Split(authHeader, "Bearer ")[1]
+			return true
 
-			req := &pb.GetByTokenRequest{
-				Token: token,
-			}
-
-			_, err := authService.GetByToken(context.Background(), req)
-			return err == nil
 		},
 		Unauthorized: func(c *fiber.Ctx) error {
 			return c.SendStatus(fiber.StatusUnauthorized)
@@ -42,9 +53,13 @@ func RouteAll(app *fiber.App, authService pb.AuthServiceClient, routers ...Route
 	for _, router := range routers {
 		router.Route(app)
 	}
+
+	app.Use(func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusNotFound).SendString("Not found")
+	})
 }
 
-func contains(s []string, el string) bool {
+func contains(el string, s []string) bool {
 	for _, a := range s {
 		if matched, _ := regexp.MatchString(a, el); matched {
 			return true
@@ -53,5 +68,6 @@ func contains(s []string, el string) bool {
 		// 	return true
 		// }
 	}
+	fmt.Println(("FALSE"))
 	return false
 }

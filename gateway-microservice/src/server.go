@@ -45,7 +45,11 @@ func main() {
 	articleRouter := routes.NewArticleRouter(articleService)
 
 	// Create fiber
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		},
+	})
 
 	routes.RouteAll(app, authService, authRouter, articleRouter)
 	log.Fatal(app.Listen(":3000"))
