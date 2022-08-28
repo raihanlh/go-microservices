@@ -1,10 +1,13 @@
-package routes
+package v1
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/raihanlh/gateway-microservice/src/routes"
+)
 
 type UserRouter struct{}
 
-func NewUserRouter() Router {
+func NewUserRouter() routes.Router {
 	return &UserRouter{}
 }
 

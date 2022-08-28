@@ -1,4 +1,4 @@
-package routes
+package v1
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	pb "github.com/raihanlh/gateway-microservice/proto"
+	"github.com/raihanlh/gateway-microservice/src/routes"
 	"github.com/raihanlh/gateway-microservice/src/util"
 	"google.golang.org/grpc/status"
 )
@@ -17,7 +18,7 @@ type ArticleRouter struct {
 	ArticleService pb.ArticleServiceClient
 }
 
-func NewArticleRouter(articleService pb.ArticleServiceClient) Router {
+func NewArticleRouter(articleService pb.ArticleServiceClient) routes.Router {
 	return &ArticleRouter{
 		ArticleService: articleService,
 	}
@@ -62,8 +63,6 @@ func (a *ArticleRouter) CreateArticle(ctx *fiber.Ctx) error {
 
 	var req pb.CreateArticleRequest
 	err := ctx.BodyParser(&req)
-	log.Println(&req)
-	log.Println((&req).Title)
 	if err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
 			"success": false,

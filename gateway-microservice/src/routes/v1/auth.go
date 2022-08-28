@@ -1,4 +1,4 @@
-package routes
+package v1
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	pb "github.com/raihanlh/gateway-microservice/proto"
+	"github.com/raihanlh/gateway-microservice/src/routes"
 	"github.com/raihanlh/gateway-microservice/src/util"
 	"google.golang.org/grpc/status"
 )
@@ -17,7 +18,7 @@ type AuthRouter struct {
 	AuthService pb.AuthServiceClient
 }
 
-func NewAuthRouter(authService pb.AuthServiceClient) Router {
+func NewAuthRouter(authService pb.AuthServiceClient) routes.Router {
 	return &AuthRouter{
 		AuthService: authService,
 	}
@@ -40,7 +41,6 @@ func (a *AuthRouter) Hello(ctx *fiber.Ctx) error {
 func (a *AuthRouter) Register(ctx *fiber.Ctx) error {
 	var req pb.RegisterRequest
 	err := ctx.BodyParser(&req)
-	log.Println(&req)
 	if err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
 			"success": false,
@@ -73,7 +73,6 @@ func (a *AuthRouter) Register(ctx *fiber.Ctx) error {
 func (a *AuthRouter) Login(ctx *fiber.Ctx) error {
 	var req pb.LoginRequest
 	err := ctx.BodyParser(&req)
-	log.Println(&req)
 	if err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
 			"success": false,
@@ -84,7 +83,6 @@ func (a *AuthRouter) Login(ctx *fiber.Ctx) error {
 	if err != nil {
 		log.Println("failed to login", err.Error())
 		if e, ok := status.FromError(err); ok {
-			log.Println(e)
 			return ctx.Status(util.HTTPStatusFromCode(e.Code())).JSON(&fiber.Map{
 				"success": false,
 				"error":   err.Error(),
@@ -134,7 +132,6 @@ func (a *AuthRouter) GetByToken(ctx *fiber.Ctx) error {
 
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
-			log.Println(e)
 			return ctx.Status(util.HTTPStatusFromCode(e.Code())).JSON(&fiber.Map{
 				"success": false,
 				"error":   err.Error(),

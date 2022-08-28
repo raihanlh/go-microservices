@@ -2,7 +2,6 @@ package routes
 
 import (
 	"context"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -20,16 +19,10 @@ func RouteAll(app *fiber.App, authService pb.AuthServiceClient, routers ...Route
 	app.Use(middlewares.NewAuthMiddleware(middlewares.AuthMiddlewareConfig{
 		Filter: func(c *fiber.Ctx) bool {
 			path := c.OriginalURL()
-			// var unprotected = []string{"\\/login", "\\/register", "\\/articles\\/[\\d]"}
-			var protected = []string{"\\/user"}
+			method := c.Method()
 
-			// if contains(path, unprotected) {
-			// 	return true
-			// }
-
-			if contains(path, protected) {
+			if contains(path, method, protected) {
 				token := c.Get("Authorization", "")
-				fmt.Println(token)
 				if strings.HasPrefix(token, "Bearer ") {
 					token = strings.Split(token, "Bearer ")[1]
 				}
@@ -59,15 +52,12 @@ func RouteAll(app *fiber.App, authService pb.AuthServiceClient, routers ...Route
 	})
 }
 
-func contains(el string, s []string) bool {
-	for _, a := range s {
-		if matched, _ := regexp.MatchString(a, el); matched {
+func contains(path string, method string, protecteds []HTTPRequest) bool {
+	for _, protected := range protecteds {
+		matched_method := method == protected.Method
+		if matched, _ := regexp.MatchString(protected.Path, path); matched && matched_method {
 			return true
 		}
-		// if a == el {
-		// 	return true
-		// }
 	}
-	fmt.Println(("FALSE"))
 	return false
 }

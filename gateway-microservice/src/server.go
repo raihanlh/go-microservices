@@ -8,6 +8,7 @@ import (
 	pb "github.com/raihanlh/gateway-microservice/proto"
 	"github.com/raihanlh/gateway-microservice/src/config"
 	"github.com/raihanlh/gateway-microservice/src/routes"
+	routes_v1 "github.com/raihanlh/gateway-microservice/src/routes/v1"
 	"google.golang.org/grpc"
 )
 
@@ -29,7 +30,7 @@ func main() {
 	defer authConn.Close()
 
 	authService := pb.NewAuthServiceClient(authConn)
-	authRouter := routes.NewAuthRouter(authService)
+	authRouter := routes_v1.NewAuthRouter(authService)
 
 	// Connect to article microservice
 	articleAddress := fmt.Sprintf("%v:%v", "", configuration.Article.Port)
@@ -42,7 +43,7 @@ func main() {
 	defer articleConn.Close()
 
 	articleService := pb.NewArticleServiceClient(articleConn)
-	articleRouter := routes.NewArticleRouter(articleService)
+	articleRouter := routes_v1.NewArticleRouter(articleService)
 
 	// Create fiber
 	app := fiber.New(fiber.Config{
