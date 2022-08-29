@@ -34,7 +34,7 @@ func main() {
 	authRouter := routes_v1.NewAuthRouter(authService)
 
 	// Connect to article microservice
-	articleAddress := fmt.Sprintf("%v:%v", configuration.Auth.Host, configuration.Article.Port)
+	articleAddress := fmt.Sprintf("%v:%v", configuration.Article.Host, configuration.Article.Port)
 	var articleConn *grpc.ClientConn
 	articleConn, err = grpc.Dial(articleAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

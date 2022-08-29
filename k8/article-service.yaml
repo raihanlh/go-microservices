@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: article-microservice
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 3002
+    targetPort: 3002
+  selector:
+    app: article

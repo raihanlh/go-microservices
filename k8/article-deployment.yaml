@@ -1,0 +1,23 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: article
+  labels:
+    app: article
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: article
+  template:
+    metadata:
+      labels:
+        app: article
+    spec:
+      containers:
+      - name: article-microservice
+        image: raihanlh/article-microservice:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3002

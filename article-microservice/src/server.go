@@ -36,7 +36,7 @@ func main() {
 	defer db.Close()
 
 	// Connect to auth service
-	authAddress := fmt.Sprintf("%v:%v", "", configuration.Auth.Port)
+	authAddress := fmt.Sprintf("%v:%v", configuration.Auth.Host, configuration.Auth.Port)
 
 	var authConn *grpc.ClientConn
 	authConn, err = grpc.Dial(authAddress, grpc.WithInsecure())
