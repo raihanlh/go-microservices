@@ -25,8 +25,8 @@ func main() {
 		log.Fatalf("Error reading config file, %s", err)
 	}
 
-	dbInfo := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
-		configuration.DB.Host, configuration.DB.User, configuration.DB.Password, configuration.DB.Name)
+	dbInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		configuration.DB.Host, configuration.DB.Port, configuration.DB.User, configuration.DB.Password, configuration.DB.Name)
 
 	db, err = sql.Open("postgres", dbInfo)
 	if err != nil {

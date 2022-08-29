@@ -19,7 +19,7 @@ func main() {
 	}
 
 	// Connect to auth microservice
-	authAddress := fmt.Sprintf("%v:%v", "", configuration.Auth.Port)
+	authAddress := fmt.Sprintf("%v:%v", configuration.Auth.Host, configuration.Auth.Port)
 
 	var authConn *grpc.ClientConn
 	authConn, err = grpc.Dial(authAddress, grpc.WithInsecure())
@@ -33,7 +33,7 @@ func main() {
 	authRouter := routes_v1.NewAuthRouter(authService)
 
 	// Connect to article microservice
-	articleAddress := fmt.Sprintf("%v:%v", "", configuration.Article.Port)
+	articleAddress := fmt.Sprintf("%v:%v", configuration.Auth.Host, configuration.Article.Port)
 	var articleConn *grpc.ClientConn
 	articleConn, err = grpc.Dial(articleAddress, grpc.WithInsecure())
 	if err != nil {
