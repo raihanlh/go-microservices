@@ -10,6 +10,7 @@ import (
 	"github.com/raihanlh/gateway-microservice/src/routes"
 	routes_v1 "github.com/raihanlh/gateway-microservice/src/routes/v1"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -22,7 +23,7 @@ func main() {
 	authAddress := fmt.Sprintf("%v:%v", configuration.Auth.Host, configuration.Auth.Port)
 
 	var authConn *grpc.ClientConn
-	authConn, err = grpc.Dial(authAddress, grpc.WithInsecure())
+	authConn, err = grpc.Dial(authAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Could not connect to port %v: %v", configuration.Auth.Port, err)
 	}
@@ -35,7 +36,7 @@ func main() {
 	// Connect to article microservice
 	articleAddress := fmt.Sprintf("%v:%v", configuration.Auth.Host, configuration.Article.Port)
 	var articleConn *grpc.ClientConn
-	articleConn, err = grpc.Dial(articleAddress, grpc.WithInsecure())
+	articleConn, err = grpc.Dial(articleAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Could not connect to port %v: %v", configuration.Article.Port, err)
 	}
