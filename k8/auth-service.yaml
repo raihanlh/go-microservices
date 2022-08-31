@@ -4,10 +4,11 @@ kind: Service
 metadata:
   name: auth-microservice
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
   - name: http
     port: 3001
     targetPort: 3001
+    nodePort: 30001
   selector:
     app: auth

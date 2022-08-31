@@ -4,10 +4,11 @@ kind: Service
 metadata:
   name: db
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
   - name: http
     port: 5432
     targetPort: 5432
+    nodePort: 30432
   selector:
     app: db

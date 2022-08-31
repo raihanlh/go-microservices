@@ -4,10 +4,11 @@ kind: Service
 metadata:
   name: article-microservice
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
   - name: http
     port: 3002
     targetPort: 3002
+    nodePort: 30002
   selector:
     app: article
