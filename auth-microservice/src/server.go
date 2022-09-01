@@ -10,6 +10,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	pb "github.com/raihanlh/go-auth-microservice/proto"
 	"github.com/raihanlh/go-auth-microservice/src/config"
@@ -17,6 +18,25 @@ import (
 	"github.com/raihanlh/go-auth-microservice/src/service"
 	"google.golang.org/grpc"
 )
+
+var (
+	// Create a metrics registry.
+	reg = prometheus.NewRegistry()
+
+	// Create some standard server metrics.
+	grpcMetrics = grpc_prometheus.NewServerMetrics()
+
+	// Create a customized counter metric.
+	customizedCounterMetric = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "login_handle_count",
+		Help: "Total number of Login RPCs handled on the server.",
+	}, []string{"email"})
+)
+
+func init() {
+	// Register standard server metrics and customized metrics to registry.
+	reg.MustRegister(grpcMetrics, customizedCounterMetric)
+}
 
 func main() {
 	log.Println("Running gRPC auth server...")
@@ -48,20 +68,24 @@ func main() {
 
 	authServer := service.AuthServer{
 		AccountRepository: accountRepository,
+		CounterVec:        customizedCounterMetric,
 	}
 
 	grpcServer := grpc.NewServer(
-		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
-		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
+		grpc.StreamInterceptor(grpcMetrics.StreamServerInterceptor()),
+		grpc.UnaryInterceptor(grpcMetrics.UnaryServerInterceptor()),
 	)
 
 	pb.RegisterAuthServiceServer(grpcServer, &authServer)
 
-	grpc_prometheus.Register(grpcServer)
+	// grpc_prometheus.Register(grpcServer)
+	grpcMetrics.InitializeMetrics(grpcServer)
 
+	httpServer := &http.Server{Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}), Addr: fmt.Sprintf("%v:%d", configuration.Auth.Host, 3101)}
 	go func() {
-		http.Handle("/metrics", promhttp.Handler())
-		log.Fatal(http.ListenAndServe(":3101", nil))
+		if err := httpServer.ListenAndServe(); err != nil {
+			log.Fatal("Unable to start a http server.")
+		}
 	}()
 
 	if err := grpcServer.Serve(lis); err != nil {

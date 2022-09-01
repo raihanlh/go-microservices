@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/prometheus/client_golang/prometheus"
 	pb "github.com/raihanlh/go-auth-microservice/proto"
 	"github.com/raihanlh/go-auth-microservice/src/config"
 	"github.com/raihanlh/go-auth-microservice/src/entity"
@@ -20,6 +21,7 @@ import (
 type AuthServer struct {
 	pb.UnimplementedAuthServiceServer
 	AccountRepository repository.AccountRepository
+	CounterVec        *prometheus.CounterVec
 }
 
 func (server *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
@@ -91,6 +93,7 @@ func (server *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 		return nil, err
 	}
 
+	server.CounterVec.WithLabelValues(req.Email).Inc()
 	return &pb.LoginResponse{
 		Token: token,
 	}, nil
