@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"strconv"
 
+	"github.com/prometheus/client_golang/prometheus"
 	pb "github.com/raihanlh/go-article-microservice/proto"
 	"github.com/raihanlh/go-article-microservice/src/entity"
 	"github.com/raihanlh/go-article-microservice/src/repository"
@@ -15,6 +17,7 @@ type ArticleServer struct {
 	pb.UnimplementedArticleServiceServer
 	ArticleRepository repository.ArticleRepository
 	AuthService       pb.AuthServiceClient
+	ArticleCounterVec *prometheus.CounterVec
 }
 
 func (a *ArticleServer) CreateArticle(ctx context.Context, req *pb.CreateArticleRequest) (*pb.CreateArticleResponse, error) {
@@ -51,6 +54,7 @@ func (a *ArticleServer) GetArticleById(ctx context.Context, req *pb.GetArticleRe
 		return &pb.GetArticleResponse{}, status.Error(codes.NotFound, "article not found")
 	}
 
+	a.ArticleCounterVec.WithLabelValues(strconv.FormatInt(req.Id, 10), article.Title).Inc()
 	return &pb.GetArticleResponse{
 		Id:        article.Id,
 		Title:     article.Title,

@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus"
 	pb "github.com/raihanlh/go-article-microservice/proto"
 	"github.com/raihanlh/go-article-microservice/src/config"
 	"github.com/raihanlh/go-article-microservice/src/repository"
@@ -21,7 +23,24 @@ const bufSize = 1024 * 1024
 
 var lis *bufconn.Listener
 
+var (
+	// Create a metrics registry.
+	reg = prometheus.NewRegistry()
+
+	// Create some standard server metrics.
+	grpcMetrics = grpc_prometheus.NewServerMetrics()
+
+	// Create a customized counter metric.
+	getArticleCounterMetric = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "get_article_count",
+		Help: "Total number of article fetched on the server.",
+	}, []string{"article_id", "title"})
+)
+
 func init() {
+	// Register standard server metrics and customized metrics to registry.
+	reg.MustRegister(grpcMetrics, getArticleCounterMetric)
+
 	var db *sql.DB
 
 	configuration, err := config.LoadConfigByPath("../../..")
@@ -30,7 +49,7 @@ func init() {
 	}
 
 	dbInfo := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
-		configuration.DB.Host, configuration.DB.User, configuration.DB.Password, configuration.DB.Name)
+		"localhost", configuration.DB.User, configuration.DB.Password, configuration.DB.Name)
 
 	db, err = sql.Open("postgres", dbInfo)
 	if err != nil {
@@ -40,7 +59,7 @@ func init() {
 	// defer db.Close()
 
 	// Connect to auth service
-	authAddress := fmt.Sprintf("%v:%v", "", configuration.Auth.Port)
+	authAddress := fmt.Sprintf("%v:%v", "localhost", configuration.Auth.Port)
 
 	var authConn *grpc.ClientConn
 	authConn, err = grpc.Dial(authAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -59,7 +78,9 @@ func init() {
 	pb.RegisterArticleServiceServer(s, &ArticleServer{
 		ArticleRepository: articleRepository,
 		AuthService:       authService,
+		ArticleCounterVec: getArticleCounterMetric,
 	})
+
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)
@@ -80,7 +101,7 @@ func TestArticleService(t *testing.T) {
 	defer conn.Close()
 
 	client := pb.NewArticleServiceClient(conn)
-	auth_token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAbG9jYWwuaG9zdCIsImV4cCI6MTY2MTc3NDMyMCwiaWQiOjl9._YicKqEmN6M7NY8ZZkaVk6N0B8e9UOUvl_7UavS7NQ4"
+	auth_token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAbG9jYWwuaG9zdCIsImV4cCI6MTY2MjM1ODU5MCwiaWQiOjl9.Uhmhiv_7V0SUzxlEFxFmQ-Dk_Eh1I8LwlMyk78bqA6U"
 	var id int64
 
 	t.Run("Ensure create article is success", func(t *testing.T) {

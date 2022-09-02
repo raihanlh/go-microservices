@@ -78,7 +78,6 @@ func main() {
 
 	pb.RegisterAuthServiceServer(grpcServer, &authServer)
 
-	// grpc_prometheus.Register(grpcServer)
 	grpcMetrics.InitializeMetrics(grpcServer)
 
 	httpServer := &http.Server{Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}), Addr: fmt.Sprintf("%v:%d", configuration.Auth.Host, 3101)}

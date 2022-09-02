@@ -7,7 +7,7 @@ docker container prune -f || true
 # docker rmi $(docker images | grep '/auth-microservice') || true
 docker build -t auth-microservice ./auth-microservice
 docker run -d -p 3001:3001 --network host --name auth-microservice auth-microservice:latest
-# rm ./auth-microservice/config.yml
+rm ./auth-microservice/config.yml
 
 # Create and run article microservice
 cp config-local.yml ./article-microservice/config.yml
@@ -16,7 +16,7 @@ docker container prune -f || true
 # docker rmi $(docker images | grep '/article-microservice') || true
 docker build -t article-microservice ./article-microservice
 docker run -d -p 3002:3002 --network host --name article-microservice article-microservice:latest
-# rm ./article-microservice/config.yml
+rm ./article-microservice/config.yml
 
 # Create and run gateway microservice
 cp config-local.yml ./gateway-microservice/config.yml
@@ -25,7 +25,7 @@ docker container prune -f || true
 # docker rmi $(docker images | grep '/gateway-microservice') || true
 docker build -t gateway-microservice ./gateway-microservice
 docker run -d -p 3000:3000 --network host --name gateway-microservice gateway-microservice:latest
-# rm ./gateway-microservice/config.yml
+rm ./gateway-microservice/config.yml
 
 docker stop db || true
 docker container prune -f || true

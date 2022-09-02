@@ -5,15 +5,39 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 
 	_ "github.com/lib/pq"
 
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	pb "github.com/raihanlh/go-article-microservice/proto"
 	"github.com/raihanlh/go-article-microservice/src/config"
 	"github.com/raihanlh/go-article-microservice/src/repository"
 	"github.com/raihanlh/go-article-microservice/src/service"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
+
+var (
+	// Create a metrics registry.
+	reg = prometheus.NewRegistry()
+
+	// Create some standard server metrics.
+	grpcMetrics = grpc_prometheus.NewServerMetrics()
+
+	// Create a customized counter metric.
+	getArticleCounterMetric = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "get_article_count",
+		Help: "Total number of article fetched on the server.",
+	}, []string{"article_id", "title"})
+)
+
+func init() {
+	// Register standard server metrics and customized metrics to registry.
+	reg.MustRegister(grpcMetrics, getArticleCounterMetric)
+}
 
 func main() {
 	log.Println("Running gRPC article server...")
@@ -39,7 +63,7 @@ func main() {
 	authAddress := fmt.Sprintf("%v:%v", configuration.Auth.Host, configuration.Auth.Port)
 
 	var authConn *grpc.ClientConn
-	authConn, err = grpc.Dial(authAddress, grpc.WithInsecure())
+	authConn, err = grpc.Dial(authAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Could not connect to port %v: %v", configuration.Auth.Port, err)
 	}
@@ -61,11 +85,22 @@ func main() {
 	articleServer := service.ArticleServer{
 		ArticleRepository: articleRepository,
 		AuthService:       authService,
+		ArticleCounterVec: getArticleCounterMetric,
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.StreamInterceptor(grpcMetrics.StreamServerInterceptor()),
+		grpc.UnaryInterceptor(grpcMetrics.UnaryServerInterceptor()),
+	)
 
 	pb.RegisterArticleServiceServer(grpcServer, &articleServer)
+
+	httpServer := &http.Server{Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}), Addr: fmt.Sprintf("%v:%d", configuration.Article.Host, 3102)}
+	go func() {
+		if err := httpServer.ListenAndServe(); err != nil {
+			log.Fatal("Unable to start a http server.")
+		}
+	}()
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve gRPC server over port %v: %v", configuration.Auth.Port, err)
