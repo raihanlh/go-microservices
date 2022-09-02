@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/fiber/v2"
 	pb "github.com/raihanlh/gateway-microservice/proto"
 	"github.com/raihanlh/gateway-microservice/src/middlewares"
@@ -15,6 +16,11 @@ type Router interface {
 }
 
 func RouteAll(app *fiber.App, authService pb.AuthServiceClient, routers ...Router) {
+	// Prometheus midlleware
+	prometheus := fiberprometheus.New("gateway-microservice")
+	prometheus.RegisterAt(app, "/metrics")
+	app.Use(prometheus.Middleware)
+
 	// Use authentication middleware
 	app.Use(middlewares.NewAuthMiddleware(middlewares.AuthMiddlewareConfig{
 		Filter: func(c *fiber.Ctx) bool {
