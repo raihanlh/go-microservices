@@ -95,7 +95,9 @@ func main() {
 
 	pb.RegisterArticleServiceServer(grpcServer, &articleServer)
 
-	httpServer := &http.Server{Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}), Addr: fmt.Sprintf("%v:%d", configuration.Article.Host, 3102)}
+	grpcMetrics.InitializeMetrics(grpcServer)
+
+	httpServer := &http.Server{Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}), Addr: fmt.Sprintf(":%d", 3102)}
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil {
 			log.Fatal("Unable to start a http server.")

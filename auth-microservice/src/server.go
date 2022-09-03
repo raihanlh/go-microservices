@@ -80,7 +80,7 @@ func main() {
 
 	grpcMetrics.InitializeMetrics(grpcServer)
 
-	httpServer := &http.Server{Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}), Addr: fmt.Sprintf("%v:%d", configuration.Auth.Host, 3101)}
+	httpServer := &http.Server{Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}), Addr: fmt.Sprintf(":%d", 3101)}
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil {
 			log.Fatal("Unable to start a http server.")

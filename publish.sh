@@ -3,7 +3,7 @@ cp config.yml ./auth-microservice
 cp config.yml ./article-microservice
 cp config.yml ./gateway-microservice
 
-docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+# docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 docker build -t raihanlh/postgres_db ./db
 docker push raihanlh/postgres_db
 docker build -t raihanlh/auth-microservice ./auth-microservice
