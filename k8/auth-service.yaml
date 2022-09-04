@@ -6,7 +6,7 @@ metadata:
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/path: '/metrics'
-    prometheus.io/port: "3031"
+    prometheus.io/port: "3101"
 spec:
   type: NodePort
   ports:
