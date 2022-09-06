@@ -80,7 +80,7 @@ func (repo *ArticleRepositoryImpl) FindById(id int64) (entity.Article, error) {
 }
 
 func (repo *ArticleRepositoryImpl) FindAllByUserId(user_id int64) ([]*pb.GetArticleResponse, error) {
-	const query = `SELECT ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id WHERE ac.id = $1 AND ar.deleted_at IS NULL`
+	const query = `SELECT ar.id, ar.id_user, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id WHERE ac.id = $1 AND ar.deleted_at IS NULL`
 
 	articles := make([]*pb.GetArticleResponse, 0)
 	rows, err := repo.DB.Query(query, user_id)
@@ -90,12 +90,13 @@ func (repo *ArticleRepositoryImpl) FindAllByUserId(user_id int64) ([]*pb.GetArti
 
 	for rows.Next() {
 		var id int64
+		var id_user int64
 		var title string
 		var content string
 		var created_at time.Time
 		var updated_at time.Time
 
-		err = rows.Scan(&id, &title, &content, &created_at, &updated_at)
+		err = rows.Scan(&id, &id_user, &title, &content, &created_at, &updated_at)
 
 		if err != nil {
 			return make([]*pb.GetArticleResponse, 0), err
@@ -103,6 +104,7 @@ func (repo *ArticleRepositoryImpl) FindAllByUserId(user_id int64) ([]*pb.GetArti
 
 		articles = append(articles, &pb.GetArticleResponse{
 			Id:        id,
+			UserId:    id_user,
 			Title:     title,
 			Content:   content,
 			CreatedAt: timestamppb.New(created_at),
@@ -114,7 +116,7 @@ func (repo *ArticleRepositoryImpl) FindAllByUserId(user_id int64) ([]*pb.GetArti
 }
 
 func (repo *ArticleRepositoryImpl) FindAll() ([]*pb.GetArticleResponse, error) {
-	const query = `SELECT ar.id, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id WHERE ar.deleted_at IS NULL`
+	const query = `SELECT ar.id, ar.id_user, ar.title, ar.content, ar.created_at, ar.updated_at FROM articles ar INNER JOIN accounts ac ON ar.id_user = ac.id WHERE ar.deleted_at IS NULL`
 
 	articles := make([]*pb.GetArticleResponse, 0)
 	rows, err := repo.DB.Query(query)
@@ -124,12 +126,13 @@ func (repo *ArticleRepositoryImpl) FindAll() ([]*pb.GetArticleResponse, error) {
 
 	for rows.Next() {
 		var id int64
+		var id_user int64
 		var title string
 		var content string
 		var created_at time.Time
 		var updated_at time.Time
 
-		err = rows.Scan(&id, &title, &content, &created_at, &updated_at)
+		err = rows.Scan(&id, &id_user, &title, &content, &created_at, &updated_at)
 
 		if err != nil {
 			return make([]*pb.GetArticleResponse, 0), err
@@ -139,6 +142,7 @@ func (repo *ArticleRepositoryImpl) FindAll() ([]*pb.GetArticleResponse, error) {
 			Id:        id,
 			Title:     title,
 			Content:   content,
+			UserId:    id_user,
 			CreatedAt: timestamppb.New(created_at),
 			UpdatedAt: timestamppb.New(updated_at),
 		})

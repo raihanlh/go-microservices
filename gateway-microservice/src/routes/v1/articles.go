@@ -25,10 +25,89 @@ func NewArticleRouter(articleService pb.ArticleServiceClient) routes.Router {
 }
 
 func (a *ArticleRouter) Route(app *fiber.App) {
+	app.Get("/articles", a.GetAllArticles)
+	app.Get("/articles/user", a.GetAllArticlesByUser)
 	app.Get("/articles/:id", a.GetArticle)
 	app.Post("/articles", a.CreateArticle)
 	app.Patch("/articles/:id", a.UpdateArticle)
 	// app.Delete("/articles", DeleteArticle)
+}
+
+func (a *ArticleRouter) GetAllArticles(ctx *fiber.Ctx) error {
+	articles, err := a.ArticleService.GetAllArticle(context.Background(), &pb.GetAllArticleRequest{})
+	if err != nil {
+		log.Printf("failed to get article: %s\n", err.Error())
+		if e, ok := status.FromError(err); ok {
+			return ctx.Status(util.HTTPStatusFromCode(e.Code())).JSON(&fiber.Map{
+				"success": false,
+				"error":   err.Error(),
+			})
+		} else {
+			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
+				"success": false,
+				"error":   err.Error(),
+			})
+		}
+	}
+
+	res := make([]map[string]interface{}, 0)
+
+	for _, article := range articles.Articles {
+		res = append(res, map[string]interface{}{
+			"id":         article.Id,
+			"title":      article.Title,
+			"content":    article.Content,
+			"account_id": article.UserId,
+			"created_at": article.CreatedAt.AsTime(),
+			"updated_at": article.UpdatedAt.AsTime(),
+		})
+	}
+
+	return ctx.Status(http.StatusOK).JSON(&fiber.Map{
+		"message": "success",
+		"data":    res,
+	})
+}
+
+func (a *ArticleRouter) GetAllArticlesByUser(ctx *fiber.Ctx) error {
+	authHeader := ctx.Get("Authorization")
+	token := strings.Split(authHeader, "Bearer ")[1]
+
+	articles, err := a.ArticleService.GetArticleByUser(context.Background(), &pb.GetAllArticleByUserRequest{
+		Token: token,
+	})
+	if err != nil {
+		log.Printf("failed to get article: %s\n", err.Error())
+		if e, ok := status.FromError(err); ok {
+			return ctx.Status(util.HTTPStatusFromCode(e.Code())).JSON(&fiber.Map{
+				"success": false,
+				"error":   err.Error(),
+			})
+		} else {
+			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
+				"success": false,
+				"error":   err.Error(),
+			})
+		}
+	}
+
+	res := make([]map[string]interface{}, 0)
+
+	for _, article := range articles.Articles {
+		res = append(res, map[string]interface{}{
+			"id":         article.Id,
+			"title":      article.Title,
+			"content":    article.Content,
+			"account_id": article.UserId,
+			"created_at": article.CreatedAt.AsTime(),
+			"updated_at": article.UpdatedAt.AsTime(),
+		})
+	}
+
+	return ctx.Status(http.StatusOK).JSON(&fiber.Map{
+		"message": "success",
+		"data":    res,
+	})
 }
 
 func (a *ArticleRouter) GetArticle(ctx *fiber.Ctx) error {
@@ -98,13 +177,7 @@ func (a *ArticleRouter) CreateArticle(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusOK).JSON(&fiber.Map{
 		"message": "success",
-		"data": map[string]interface{}{
-			"id":         res.Article.Id,
-			"title":      res.Article.Title,
-			"content":    res.Article.Content,
-			"created_at": res.Article.CreatedAt.AsTime(),
-			"updated_at": res.Article.UpdatedAt.AsTime(),
-		},
+		"data":    res,
 	})
 }
 
