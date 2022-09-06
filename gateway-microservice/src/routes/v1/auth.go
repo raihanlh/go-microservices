@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	pb "github.com/raihanlh/gateway-microservice/proto"
@@ -101,16 +100,6 @@ func (a *AuthRouter) Login(ctx *fiber.Ctx) error {
 	})
 }
 
-type AccountDTO struct {
-	Id        int64     `json:"id"`
-	Email     string    `json:"email"`
-	Role      int64     `json:"role"`
-	Enable    bool      `json:"enable"`
-	Locked    bool      `json:"locked"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
 func (a *AuthRouter) GetByToken(ctx *fiber.Ctx) error {
 	authHeader := ctx.Get("Authorization")
 	token := strings.Split(authHeader, "Bearer ")[1]
@@ -120,15 +109,6 @@ func (a *AuthRouter) GetByToken(ctx *fiber.Ctx) error {
 	}
 
 	account, err := a.AuthService.GetByToken(context.Background(), req)
-	res := &AccountDTO{
-		Id:        account.Id,
-		Email:     account.Email,
-		Role:      account.Role,
-		Enable:    account.Enable,
-		Locked:    account.Locked,
-		CreatedAt: account.CreatedAt.AsTime(),
-		UpdatedAt: account.UpdatedAt.AsTime(),
-	}
 
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
@@ -146,6 +126,14 @@ func (a *AuthRouter) GetByToken(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusOK).JSON(&fiber.Map{
 		"success": true,
-		"data":    res,
+		"data": map[string]interface{}{
+			"id":         account.Id,
+			"email":      account.Email,
+			"role":       account.Role,
+			"enable":     account.Enable,
+			"locked":     account.Locked,
+			"created_at": account.CreatedAt.AsTime(),
+			"updated_at": account.UpdatedAt.AsTime(),
+		},
 	})
 }

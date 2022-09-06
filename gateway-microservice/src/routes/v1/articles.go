@@ -53,7 +53,14 @@ func (a *ArticleRouter) GetArticle(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusOK).JSON(&fiber.Map{
 		"message": "success",
-		"data":    res,
+		"data": map[string]interface{}{
+			"id":         res.Id,
+			"title":      res.Title,
+			"content":    res.Content,
+			"account_id": res.UserId,
+			"created_at": res.CreatedAt.AsTime(),
+			"updated_at": res.UpdatedAt.AsTime(),
+		},
 	})
 }
 
@@ -91,7 +98,13 @@ func (a *ArticleRouter) CreateArticle(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusOK).JSON(&fiber.Map{
 		"message": "success",
-		"data":    res,
+		"data": map[string]interface{}{
+			"id":         res.Article.Id,
+			"title":      res.Article.Title,
+			"content":    res.Article.Content,
+			"created_at": res.Article.CreatedAt.AsTime(),
+			"updated_at": res.Article.UpdatedAt.AsTime(),
+		},
 	})
 }
 

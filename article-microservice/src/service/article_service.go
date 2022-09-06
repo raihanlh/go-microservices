@@ -61,6 +61,7 @@ func (a *ArticleServer) GetArticleById(ctx context.Context, req *pb.GetArticleRe
 		Content:   article.Content,
 		CreatedAt: timestamppb.New(article.CreatedAt),
 		UpdatedAt: timestamppb.New(article.UpdatedAt),
+		UserId:    article.AccountId,
 	}, nil
 }
 
