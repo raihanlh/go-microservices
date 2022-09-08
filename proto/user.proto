@@ -1,0 +1,47 @@
+syntax = "proto3";
+package proto;
+option go_package = "github.com/raihanlh/proto;proto";
+import "google/protobuf/timestamp.proto";
+
+message Empty {}
+
+message Date {
+  string day = 1;
+  string month = 2;
+  string year = 3;
+}
+
+message UserDetail {
+  int64 id = 1;
+  int64 id_account = 2;
+  string fullname = 3;
+  int64 id_gender = 4;
+  string gender = 5;
+  string phone = 6;
+  Date date_of_birth = 7;
+  google.protobuf.Timestamp created_at = 8;
+	google.protobuf.Timestamp updated_at = 9;
+}
+
+message CreateUpdateUserDetailRequest {
+  string fullname = 1;
+  int64 id_gender = 2;
+  string phone = 3;
+  Date date_of_birth = 4;
+  string token = 5;
+}
+
+message GetUserDetailByUserRequest {
+  string token = 1;
+}
+
+message GetAllUserDetailResponse {
+  repeated UserDetail user_details = 1;
+}
+
+
+service UserDetailService {
+  rpc CreateUpdateUserDetail(CreateUpdateUserDetailRequest) returns (UserDetail) {}
+  rpc GetUserDetailByUser(GetUserDetailByUserRequest) returns (UserDetail) {}
+  rpc GetAllUserDetail(Empty) returns (GetAllUserDetailResponse) {}
+}
