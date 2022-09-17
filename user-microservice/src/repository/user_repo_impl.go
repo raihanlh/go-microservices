@@ -3,12 +3,13 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	pb "github.com/raihanlh/go-user-microservice/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+var loc = time.FixedZone("UTC+7", 7*60*60)
 
 type UserRepositoryImpl struct {
 	DB *sql.DB
@@ -26,13 +27,12 @@ func (repo *UserRepositoryImpl) Save(c context.Context, user *pb.UserDetail) (*p
 
 	var id int64
 	var fullname string
-	var id_gender string
+	var id_gender int64
 	var phone string
 	var dob time.Time
 	var created_at time.Time
 	var updated_at time.Time
 
-	loc := time.FixedZone("UTC+7", 7*60*60)
 	dob = time.Date(int(user.DateOfBirth.Year), time.Month(int(user.DateOfBirth.Month)), int(user.DateOfBirth.Day), 0, 0, 0, 0, loc)
 
 	stmt, err := repo.DB.PrepareContext(c, query)
@@ -59,7 +59,6 @@ func (repo *UserRepositoryImpl) Update(c context.Context, user *pb.UserDetail) (
 	var created_at time.Time
 	var updated_at time.Time
 
-	loc := time.FixedZone("UTC+7", 7*60*60)
 	dob := time.Date(int(user.DateOfBirth.Year), time.Month(int(user.DateOfBirth.Month)), int(user.DateOfBirth.Day), 0, 0, 0, 0, loc)
 
 	stmt, err := repo.DB.PrepareContext(c, query)
@@ -67,7 +66,6 @@ func (repo *UserRepositoryImpl) Update(c context.Context, user *pb.UserDetail) (
 		return nil, err
 	}
 	row := stmt.QueryRowContext(c, user.Fullname, user.IdGender, user.Phone, dob, user.UpdatedAt.AsTime().In(loc), user.IdAccount)
-	fmt.Println(user.UpdatedAt.AsTime().In(loc))
 	err = row.Scan(&created_at, &updated_at)
 	if err != nil {
 		return nil, err
@@ -80,7 +78,45 @@ func (repo *UserRepositoryImpl) Update(c context.Context, user *pb.UserDetail) (
 }
 
 func (repo *UserRepositoryImpl) FindByAccountId(c context.Context, id_account int64) (*pb.UserDetail, error) {
-	return nil, nil
+	query := `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at WHERE id_user = ? AND deleted_at IS NOT NULL`
+
+	var id int64
+	var id_user int64
+	var fullname string
+	var id_gender int64
+	var phone string
+	var dob time.Time
+	var created_at time.Time
+	var updated_at time.Time
+	var deleted_at sql.NullTime
+
+	stmt, err := repo.DB.PrepareContext(c, query)
+	if err != nil {
+		return nil, err
+	}
+
+	row := stmt.QueryRowContext(c, id_account)
+	err = row.Scan(&id, &id_user, &fullname, &id_gender, &phone, &dob, &created_at, &updated_at, &deleted_at)
+	if err != nil {
+		return nil, err
+	}
+
+	year, month, day := time.Now().Date()
+
+	return &pb.UserDetail{
+		Id:        id,
+		IdAccount: id_user,
+		Fullname:  fullname,
+		IdGender:  id_gender,
+		Phone:     phone,
+		DateOfBirth: &pb.Date{
+			Day:   int32(day),
+			Month: int32(month),
+			Year:  int32(year),
+		},
+		CreatedAt: timestamppb.New(created_at),
+		UpdatedAt: timestamppb.New(updated_at),
+	}, nil
 }
 
 func (repo *UserRepositoryImpl) FindAll(c context.Context) ([]*pb.UserDetail, error) {
