@@ -46,6 +46,7 @@ var u_updated = &pb.UserDetail{
 }
 
 func TestSave(t *testing.T) {
+	fmt.Println("Test save")
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -73,6 +74,7 @@ func TestSave(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
+	fmt.Println("Test update")
 	updateTime := time.Now()
 	u_updated.UpdatedAt = timestamppb.New(updateTime)
 
@@ -101,6 +103,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestGetById(t *testing.T) {
+	fmt.Println("Test get by id")
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -109,7 +112,7 @@ func TestGetById(t *testing.T) {
 
 	loc := time.FixedZone("UTC+7", 7*60*60)
 
-	query := "SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at WHERE id_user = \\? AND deleted_at IS NOT NULL"
+	query := "SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE id_user = \\? AND deleted_at IS NULL"
 
 	rows := sqlmock.NewRows([]string{"id", "id_user", "fullname", "id_gender", "phone", "date_of_birth", "created_at", "updated_at", "deleted_at"}).
 		AddRow(1, 1, "Test McTester", 0, "08123456789", time.Date(1990, time.January, 1, 0, 0, 0, 0, loc), time.Now(), time.Now(), nil)
@@ -121,4 +124,29 @@ func TestGetById(t *testing.T) {
 	fmt.Println(user_detail)
 	assert.NoError(t, err)
 	assert.NotNil(t, user_detail)
+}
+
+func TestGetAll(t *testing.T) {
+	fmt.Println("Test get all")
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	loc := time.FixedZone("UTC+7", 7*60*60)
+
+	query := "SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE deleted_at IS NULL"
+
+	rows := sqlmock.NewRows([]string{"id", "id_user", "fullname", "id_gender", "phone", "date_of_birth", "created_at", "updated_at", "deleted_at"}).
+		AddRow(1, 1, "Test McTester", 0, "08123456789", time.Date(1990, time.January, 1, 0, 0, 0, 0, loc), time.Now(), time.Now(), nil).
+		AddRow(2, 2, "Test McTester 2", 1, "08123456788", time.Date(1991, time.January, 1, 0, 0, 0, 0, loc), time.Now(), time.Now(), nil)
+
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectQuery().WithArgs().WillReturnRows(rows)
+	repo := repository.NewUserRepository(db)
+	user_details, err := repo.FindAll(context.TODO())
+	fmt.Println(user_details)
+	assert.NoError(t, err)
+	assert.NotNil(t, user_details)
 }

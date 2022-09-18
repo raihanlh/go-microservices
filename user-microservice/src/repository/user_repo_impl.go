@@ -78,7 +78,7 @@ func (repo *UserRepositoryImpl) Update(c context.Context, user *pb.UserDetail) (
 }
 
 func (repo *UserRepositoryImpl) FindByAccountId(c context.Context, id_account int64) (*pb.UserDetail, error) {
-	query := `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at WHERE id_user = ? AND deleted_at IS NOT NULL`
+	query := `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE id_user = ? AND deleted_at IS NULL`
 
 	var id int64
 	var id_user int64
@@ -120,7 +120,53 @@ func (repo *UserRepositoryImpl) FindByAccountId(c context.Context, id_account in
 }
 
 func (repo *UserRepositoryImpl) FindAll(c context.Context) ([]*pb.UserDetail, error) {
-	return nil, nil
+	const query = `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE deleted_at IS NULL`
+	stmt, err := repo.DB.PrepareContext(c, query)
+	if err != nil {
+		return nil, err
+	}
+
+	user_details := make([]*pb.UserDetail, 0)
+	rows, err := stmt.QueryContext(c, query)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var id int64
+		var id_user int64
+		var fullname string
+		var id_gender int64
+		var phone string
+		var dob time.Time
+		var created_at time.Time
+		var updated_at time.Time
+		var deleted_at sql.NullTime
+
+		err = rows.Scan(&id, &id_user, &fullname, &id_gender, &phone, &dob, &created_at, &updated_at, &deleted_at)
+		if err != nil {
+			return nil, err
+		}
+		year, month, day := time.Now().Date()
+
+		user_details = append(user_details, &pb.UserDetail{
+			Id:        id,
+			IdAccount: id_user,
+			Fullname:  fullname,
+			IdGender:  id_gender,
+			Phone:     phone,
+			DateOfBirth: &pb.Date{
+				Day:   int32(day),
+				Month: int32(month),
+				Year:  int32(year),
+			},
+			CreatedAt: timestamppb.New(created_at),
+			UpdatedAt: timestamppb.New(updated_at),
+		})
+
+	}
+
+	return user_details, nil
 }
 
 func (repo *UserRepositoryImpl) IsExist(c context.Context, id_account int64) (bool, error) {
