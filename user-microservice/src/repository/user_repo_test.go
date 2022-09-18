@@ -150,3 +150,25 @@ func TestGetAll(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, user_details)
 }
+
+func TestIsExist(t *testing.T) {
+	fmt.Println("Test is exist")
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	const query = "SELECT id FROM user_details u WHERE u.id_user = \\?"
+
+	rows := sqlmock.NewRows([]string{"id"}).
+		AddRow(1)
+
+	prep := mock.ExpectPrepare(query)
+	prep.ExpectQuery().WithArgs(u.IdAccount).WillReturnRows(rows)
+	repo := repository.NewUserRepository(db)
+	exist, err := repo.IsExist(context.TODO(), 1)
+	fmt.Println(exist)
+	assert.NoError(t, err)
+	assert.NotNil(t, exist)
+}

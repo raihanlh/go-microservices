@@ -170,5 +170,20 @@ func (repo *UserRepositoryImpl) FindAll(c context.Context) ([]*pb.UserDetail, er
 }
 
 func (repo *UserRepositoryImpl) IsExist(c context.Context, id_account int64) (bool, error) {
-	return false, nil
+	const query = `SELECT id FROM user_details u WHERE u.id_user = ?`
+	var id int64
+
+	stmt, err := repo.DB.PrepareContext(c, query)
+	if err != nil {
+		return false, err
+	}
+
+	err = stmt.QueryRowContext(c, id_account).Scan(&id)
+	if err != nil && err != sql.ErrNoRows {
+		return false, err
+	} else if err == sql.ErrNoRows {
+		return false, nil
+	} else {
+		return true, nil
+	}
 }
