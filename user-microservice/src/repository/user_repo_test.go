@@ -64,7 +64,7 @@ func TestSave(t *testing.T) {
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(u.IdAccount, u.Fullname, u.IdGender, u.Phone, dob, u.CreatedAt.AsTime(), u.UpdatedAt.AsTime(), nil).WillReturnRows(rows)
-	repo := repository.NewUserRepository(db)
+	repo := repository.NewUserDetailRepository(db)
 
 	user_detail, err := repo.Save(context.TODO(), u)
 
@@ -94,7 +94,7 @@ func TestUpdate(t *testing.T) {
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(u_updated.Fullname, u_updated.IdGender, u_updated.Phone, dob, u_updated.UpdatedAt.AsTime().In(loc), u_updated.IdAccount).WillReturnRows(rows)
-	repo := repository.NewUserRepository(db)
+	repo := repository.NewUserDetailRepository(db)
 
 	user_detail, err := repo.Update(context.TODO(), u_updated)
 	fmt.Println(user_detail)
@@ -119,7 +119,7 @@ func TestGetById(t *testing.T) {
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(u.IdAccount).WillReturnRows(rows)
-	repo := repository.NewUserRepository(db)
+	repo := repository.NewUserDetailRepository(db)
 	user_detail, err := repo.FindByAccountId(context.TODO(), u.IdAccount)
 	fmt.Println(user_detail)
 	assert.NoError(t, err)
@@ -144,7 +144,7 @@ func TestGetAll(t *testing.T) {
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs().WillReturnRows(rows)
-	repo := repository.NewUserRepository(db)
+	repo := repository.NewUserDetailRepository(db)
 	user_details, err := repo.FindAll(context.TODO())
 	fmt.Println(user_details)
 	assert.NoError(t, err)
@@ -166,7 +166,7 @@ func TestIsExist(t *testing.T) {
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(u.IdAccount).WillReturnRows(rows)
-	repo := repository.NewUserRepository(db)
+	repo := repository.NewUserDetailRepository(db)
 	exist, err := repo.IsExist(context.TODO(), 1)
 	fmt.Println(exist)
 	assert.NoError(t, err)

@@ -5,15 +5,17 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/lib/pq"
-	pb "github.com/raihanlh/go-user-microservice/proto"
-	"github.com/raihanlh/go-user-microservice/src/config"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/test/bufconn"
 	"log"
 	"net"
 	"testing"
+
+	_ "github.com/lib/pq"
+	pb "github.com/raihanlh/go-user-microservice/proto"
+	"github.com/raihanlh/go-user-microservice/src/config"
+	"github.com/raihanlh/go-user-microservice/src/repository"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/test/bufconn"
 )
 
 const bufSize = 1024 * 1024
@@ -55,8 +57,8 @@ func init() {
 	lis = bufconn.Listen(bufSize)
 	s := grpc.NewServer()
 	userDetailRepository := repository.NewUserDetailRepository(db)
-	pb.RegisterUserDetailServiceServer(s, &ArticleServer{
-		UserDetailRepository: articleRepository,
+	pb.RegisterUserDetailServiceServer(s, &UserServer{
+		UserDetailRepository: userDetailRepository,
 		AuthService:          authService,
 	})
 

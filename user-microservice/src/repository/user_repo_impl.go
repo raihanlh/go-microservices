@@ -11,17 +11,17 @@ import (
 
 var loc = time.FixedZone("UTC+7", 7*60*60)
 
-type UserRepositoryImpl struct {
+type UserDetailRepositoryImpl struct {
 	DB *sql.DB
 }
 
-func NewUserRepository(db *sql.DB) UserRepository {
-	return &UserRepositoryImpl{
+func NewUserDetailRepository(db *sql.DB) UserDetailRepository {
+	return &UserDetailRepositoryImpl{
 		DB: db,
 	}
 }
 
-func (repo *UserRepositoryImpl) Save(c context.Context, user *pb.UserDetail) (*pb.UserDetail, error) {
+func (repo *UserDetailRepositoryImpl) Save(c context.Context, user *pb.UserDetail) (*pb.UserDetail, error) {
 	const query = `INSERT INTO user_details (id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at) ` +
 		`VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, fullname, id_gender, phone, date_of_birth, created_at, updated_at`
 
@@ -53,7 +53,7 @@ func (repo *UserRepositoryImpl) Save(c context.Context, user *pb.UserDetail) (*p
 	return user, nil
 }
 
-func (repo *UserRepositoryImpl) Update(c context.Context, user *pb.UserDetail) (*pb.UserDetail, error) {
+func (repo *UserDetailRepositoryImpl) Update(c context.Context, user *pb.UserDetail) (*pb.UserDetail, error) {
 	const query = `UPDATE user_details u SET fullname = ?, id_gender = ?, phone = ?, date_of_birth = ?, updated_at = ? WHERE id_user = ? AND deleted_at IS NULL RETURNING created_at, updated_at`
 
 	var created_at time.Time
@@ -77,7 +77,7 @@ func (repo *UserRepositoryImpl) Update(c context.Context, user *pb.UserDetail) (
 	return user, nil
 }
 
-func (repo *UserRepositoryImpl) FindByAccountId(c context.Context, id_account int64) (*pb.UserDetail, error) {
+func (repo *UserDetailRepositoryImpl) FindByAccountId(c context.Context, id_account int64) (*pb.UserDetail, error) {
 	query := `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE id_user = ? AND deleted_at IS NULL`
 
 	var id int64
@@ -119,7 +119,7 @@ func (repo *UserRepositoryImpl) FindByAccountId(c context.Context, id_account in
 	}, nil
 }
 
-func (repo *UserRepositoryImpl) FindAll(c context.Context) ([]*pb.UserDetail, error) {
+func (repo *UserDetailRepositoryImpl) FindAll(c context.Context) ([]*pb.UserDetail, error) {
 	const query = `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE deleted_at IS NULL`
 	stmt, err := repo.DB.PrepareContext(c, query)
 	if err != nil {
@@ -169,7 +169,7 @@ func (repo *UserRepositoryImpl) FindAll(c context.Context) ([]*pb.UserDetail, er
 	return user_details, nil
 }
 
-func (repo *UserRepositoryImpl) IsExist(c context.Context, id_account int64) (bool, error) {
+func (repo *UserDetailRepositoryImpl) IsExist(c context.Context, id_account int64) (bool, error) {
 	const query = `SELECT id FROM user_details u WHERE u.id_user = ?`
 	var id int64
 
