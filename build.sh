@@ -30,7 +30,7 @@ rm ./gateway-microservice/config.yml
 docker stop db || true
 docker container prune -f || true
 docker build -t postgres_db ./db
-docker run -d -p 5431:5432 --name db postgres_db:latest
+docker run -d -p 5432:5432 --name db postgres_db:latest
 
 # remove dangling images
 docker images -a | grep none | awk '{ print $3; }' | xargs docker rmi

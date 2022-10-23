@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"log"
 	"time"
 
 	pb "github.com/raihanlh/go-user-microservice/proto"
@@ -22,8 +23,8 @@ func NewUserDetailRepository(db *sql.DB) UserDetailRepository {
 }
 
 func (repo *UserDetailRepositoryImpl) Save(c context.Context, user *pb.UserDetail) (*pb.UserDetail, error) {
-	const query = `INSERT INTO user_details (id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at) ` +
-		`VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, fullname, id_gender, phone, date_of_birth, created_at, updated_at`
+	const query = `INSERT INTO users_details (id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at) ` +
+		`VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, fullname, id_gender, phone, date_of_birth, created_at, updated_at`
 
 	var id int64
 	var fullname string
@@ -37,12 +38,14 @@ func (repo *UserDetailRepositoryImpl) Save(c context.Context, user *pb.UserDetai
 
 	stmt, err := repo.DB.PrepareContext(c, query)
 	if err != nil {
+		log.Println("Failed to prepare context for saving user detail: ", err)
 		return nil, err
 	}
-	row := stmt.QueryRowContext(c, user.IdAccount, user.Fullname, user.IdGender, user.Phone, dob, user.CreatedAt.AsTime(), user.UpdatedAt.AsTime(), nil)
+	row := stmt.QueryRowContext(c, user.IdAccount, user.Fullname, user.IdGender, user.Phone, dob, time.Now(), time.Now(), nil)
 
 	err = row.Scan(&id, &fullname, &id_gender, &phone, &dob, &created_at, &updated_at)
 	if err != nil {
+		log.Println("Failed to scan row user detail: ", err)
 		return nil, err
 	}
 
@@ -54,7 +57,7 @@ func (repo *UserDetailRepositoryImpl) Save(c context.Context, user *pb.UserDetai
 }
 
 func (repo *UserDetailRepositoryImpl) Update(c context.Context, user *pb.UserDetail) (*pb.UserDetail, error) {
-	const query = `UPDATE user_details u SET fullname = ?, id_gender = ?, phone = ?, date_of_birth = ?, updated_at = ? WHERE id_user = ? AND deleted_at IS NULL RETURNING created_at, updated_at`
+	const query = `UPDATE user_details u SET fullname = $1, id_gender = $2, phone = $3, date_of_birth = $4, updated_at = $5 WHERE id_user = $6 AND deleted_at IS NULL RETURNING created_at, updated_at`
 
 	var created_at time.Time
 	var updated_at time.Time
@@ -78,7 +81,7 @@ func (repo *UserDetailRepositoryImpl) Update(c context.Context, user *pb.UserDet
 }
 
 func (repo *UserDetailRepositoryImpl) FindByAccountId(c context.Context, id_account int64) (*pb.UserDetail, error) {
-	query := `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE id_user = ? AND deleted_at IS NULL`
+	query := `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE id_user = $1 AND deleted_at IS NULL`
 
 	var id int64
 	var id_user int64
@@ -170,16 +173,19 @@ func (repo *UserDetailRepositoryImpl) FindAll(c context.Context) ([]*pb.UserDeta
 }
 
 func (repo *UserDetailRepositoryImpl) IsExist(c context.Context, id_account int64) (bool, error) {
-	const query = `SELECT id FROM user_details u WHERE u.id_user = ?`
+	const query = `SELECT id FROM users_details u WHERE u.id_user = $1`
 	var id int64
 
+	log.Println(query)
 	stmt, err := repo.DB.PrepareContext(c, query)
 	if err != nil {
+		log.Println("Error preparing context: ", err)
 		return false, err
 	}
 
 	err = stmt.QueryRowContext(c, id_account).Scan(&id)
 	if err != nil && err != sql.ErrNoRows {
+		log.Println("Error querying row: ", err)
 		return false, err
 	} else if err == sql.ErrNoRows {
 		return false, nil

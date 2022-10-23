@@ -103,3 +103,5 @@ CREATE TABLE IF NOT EXISTS articles_categories (
 );
 
 INSERT INTO roles (id, name) VALUES (1, 'admin'), (2, 'user') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+
+INSERT INTO genders (id, name) VALUES (0, 'male'), (1, 'female') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;

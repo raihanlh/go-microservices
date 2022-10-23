@@ -60,7 +60,7 @@ func TestSave(t *testing.T) {
 		AddRow(1, u.Fullname, u.IdGender, u.Phone, dob, u.CreatedAt.AsTime(), u.UpdatedAt.AsTime())
 
 	query := "INSERT INTO user_details \\(id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at\\) " +
-		"VALUES \\(\\?, \\?, \\?, \\?, \\?, \\?, \\?, \\?\\) RETURNING id, fullname, id_gender, phone, date_of_birth, created_at, updated_at"
+		"VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5, \\$6, \\$7, \\$8\\) RETURNING id, fullname, id_gender, phone, date_of_birth, created_at, updated_at"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(u.IdAccount, u.Fullname, u.IdGender, u.Phone, dob, u.CreatedAt.AsTime(), u.UpdatedAt.AsTime(), nil).WillReturnRows(rows)
@@ -90,7 +90,7 @@ func TestUpdate(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"created_at", "updated_at"}).
 		AddRow(u_updated.CreatedAt.AsTime().In(loc), u_updated.UpdatedAt.AsTime().In(loc))
 
-	query := "UPDATE user_details u SET fullname = \\?, id_gender = \\?, phone = \\?, date_of_birth = \\?, updated_at = \\? WHERE id_user = \\? AND deleted_at IS NULL RETURNING created_at, updated_at"
+	query := "UPDATE user_details u SET fullname = \\$1, id_gender = \\$2, phone = \\$3, date_of_birth = \\$4, updated_at = \\$5 WHERE id_user = \\$6 AND deleted_at IS NULL RETURNING created_at, updated_at"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectQuery().WithArgs(u_updated.Fullname, u_updated.IdGender, u_updated.Phone, dob, u_updated.UpdatedAt.AsTime().In(loc), u_updated.IdAccount).WillReturnRows(rows)
@@ -112,7 +112,7 @@ func TestGetById(t *testing.T) {
 
 	loc := time.FixedZone("UTC+7", 7*60*60)
 
-	query := "SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE id_user = \\? AND deleted_at IS NULL"
+	query := "SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE id_user = \\$1 AND deleted_at IS NULL"
 
 	rows := sqlmock.NewRows([]string{"id", "id_user", "fullname", "id_gender", "phone", "date_of_birth", "created_at", "updated_at", "deleted_at"}).
 		AddRow(1, 1, "Test McTester", 0, "08123456789", time.Date(1990, time.January, 1, 0, 0, 0, 0, loc), time.Now(), time.Now(), nil)
@@ -159,7 +159,7 @@ func TestIsExist(t *testing.T) {
 	}
 	defer db.Close()
 
-	const query = "SELECT id FROM user_details u WHERE u.id_user = \\?"
+	const query = "SELECT id FROM users_details u WHERE u.id_user = \\$1"
 
 	rows := sqlmock.NewRows([]string{"id"}).
 		AddRow(1)

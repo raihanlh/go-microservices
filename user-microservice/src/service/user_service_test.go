@@ -82,7 +82,7 @@ func TestUserDetailService(t *testing.T) {
 	defer conn.Close()
 
 	client := pb.NewUserDetailServiceClient(conn)
-	auth_token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAbG9jYWwuaG9zdCIsImV4cCI6MTY2MjM1ODU5MCwiaWQiOjl9.Uhmhiv_7V0SUzxlEFxFmQ-Dk_Eh1I8LwlMyk78bqA6U"
+	auth_token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAbG9jYWwuaG9zdCIsImV4cCI6MTY2Njc5NzI2MiwiaWQiOjF9.XsKEU5gz1hWmgZfoSTQErnKOyGYse7HcVW7yolrBuqc"
 
 	t.Run("Ensure create/update user detail is success", func(t *testing.T) {
 		res, err := client.CreateUpdateUserDetail(ctx, &pb.CreateUpdateUserDetailRequest{
