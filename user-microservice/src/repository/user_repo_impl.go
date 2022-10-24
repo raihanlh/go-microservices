@@ -57,7 +57,7 @@ func (repo *UserDetailRepositoryImpl) Save(c context.Context, user *pb.UserDetai
 }
 
 func (repo *UserDetailRepositoryImpl) Update(c context.Context, user *pb.UserDetail) (*pb.UserDetail, error) {
-	const query = `UPDATE user_details u SET fullname = $1, id_gender = $2, phone = $3, date_of_birth = $4, updated_at = $5 WHERE id_user = $6 AND deleted_at IS NULL RETURNING created_at, updated_at`
+	const query = `UPDATE users_details u SET fullname = $1, id_gender = $2, phone = $3, date_of_birth = $4, updated_at = $5 WHERE id_user = $6 AND deleted_at IS NULL RETURNING created_at, updated_at`
 
 	var created_at time.Time
 	var updated_at time.Time
@@ -81,7 +81,7 @@ func (repo *UserDetailRepositoryImpl) Update(c context.Context, user *pb.UserDet
 }
 
 func (repo *UserDetailRepositoryImpl) FindByAccountId(c context.Context, id_account int64) (*pb.UserDetail, error) {
-	query := `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE id_user = $1 AND deleted_at IS NULL`
+	query := `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM users_details WHERE id_user = $1 AND deleted_at IS NULL`
 
 	var id int64
 	var id_user int64
@@ -123,13 +123,13 @@ func (repo *UserDetailRepositoryImpl) FindByAccountId(c context.Context, id_acco
 }
 
 func (repo *UserDetailRepositoryImpl) FindAll(c context.Context) ([]*pb.UserDetail, error) {
-	const query = `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM user_details WHERE deleted_at IS NULL`
+	const query = `SELECT id, id_user, fullname, id_gender, phone, date_of_birth, created_at, updated_at, deleted_at FROM users_details WHERE deleted_at IS NULL`
 	stmt, err := repo.DB.PrepareContext(c, query)
 	if err != nil {
 		return nil, err
 	}
 
-	user_details := make([]*pb.UserDetail, 0)
+	users_details := make([]*pb.UserDetail, 0)
 	rows, err := stmt.QueryContext(c, query)
 	if err != nil {
 		return nil, err
@@ -152,7 +152,7 @@ func (repo *UserDetailRepositoryImpl) FindAll(c context.Context) ([]*pb.UserDeta
 		}
 		year, month, day := time.Now().Date()
 
-		user_details = append(user_details, &pb.UserDetail{
+		users_details = append(users_details, &pb.UserDetail{
 			Id:        id,
 			IdAccount: id_user,
 			Fullname:  fullname,
@@ -169,7 +169,7 @@ func (repo *UserDetailRepositoryImpl) FindAll(c context.Context) ([]*pb.UserDeta
 
 	}
 
-	return user_details, nil
+	return users_details, nil
 }
 
 func (repo *UserDetailRepositoryImpl) IsExist(c context.Context, id_account int64) (bool, error) {

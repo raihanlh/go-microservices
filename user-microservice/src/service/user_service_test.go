@@ -84,16 +84,27 @@ func TestUserDetailService(t *testing.T) {
 	client := pb.NewUserDetailServiceClient(conn)
 	auth_token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAbG9jYWwuaG9zdCIsImV4cCI6MTY2Njc5NzI2MiwiaWQiOjF9.XsKEU5gz1hWmgZfoSTQErnKOyGYse7HcVW7yolrBuqc"
 
-	t.Run("Ensure create/update user detail is success", func(t *testing.T) {
-		res, err := client.CreateUpdateUserDetail(ctx, &pb.CreateUpdateUserDetailRequest{
-			Fullname: "Test McTester",
-			IdGender: 0,
-			Phone:    "08123456789",
-			DateOfBirth: &pb.Date{
-				Day:   1,
-				Month: 1,
-				Year:  1997,
-			},
+	// t.Run("Ensure create/update user detail is success", func(t *testing.T) {
+	// 	res, err := client.CreateUpdateUserDetail(ctx, &pb.CreateUpdateUserDetailRequest{
+	// 		Fullname: "Test McTester",
+	// 		IdGender: 0,
+	// 		Phone:    "08123456789",
+	// 		DateOfBirth: &pb.Date{
+	// 			Day:   1,
+	// 			Month: 1,
+	// 			Year:  1997,
+	// 		},
+	// 		Token: auth_token,
+	// 	})
+	// 	if err != nil {
+	// 		t.Log(err)
+	// 		t.Errorf("Create/update user detail test failed")
+	// 	}
+	// 	PrintResult(res)
+	// })
+
+	t.Run("Ensure get user detail is success", func(t *testing.T) {
+		res, err := client.GetUserDetailByUser(ctx, &pb.GetUserDetailByUserRequest{
 			Token: auth_token,
 		})
 		if err != nil {
